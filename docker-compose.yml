@@ -1,12 +1,20 @@
 version: '3.8'
 services:
-  app:
+  backend:
     build: .
     volumes:
-      - ./app:/app # Mount the local app directory to the container
-      - go-modules:/go/pkg/mod # Cache Go modules
+      - ./app:/app
+      - go-modules:/go/pkg/mod
     ports:
       - "8080:8080"
+      
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5000:5000"
 
   mongodb:
     image: mongo
