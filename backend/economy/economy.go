@@ -4,7 +4,7 @@ package economy
 import (
 	"fmt"
 
-	"github.com/JoeLuker/verden/app/models"
+	"github.com/JoeLuker/verden/models"
 )
 
 func BuyItem(buyer *models.Player, seller *models.Player, itemID string, quantity int, items map[string]models.Item) error {

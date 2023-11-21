@@ -4,9 +4,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/JoeLuker/verden/app/db"
-	"github.com/JoeLuker/verden/app/economy"
-	"github.com/JoeLuker/verden/app/models"
+	"github.com/JoeLuker/verden/db"
+	"github.com/JoeLuker/verden/economy"
+	"github.com/JoeLuker/verden/models"
 )
 
 func main() {
