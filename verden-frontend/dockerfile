@@ -5,24 +5,17 @@ FROM node:16
 WORKDIR /app
 
 # Step 3: Copy package.json and package-lock.json (or yarn.lock)
-COPY package*.json ./
-# If you are using yarn, uncomment the next line and delete the above line
-# COPY package.json yarn.lock ./
+COPY package.json yarn.lock ./
 
 # Step 4: Install dependencies
-# For npm
-RUN npm install
-# If you are using yarn, uncomment the next line and delete the above line
-# RUN yarn install
+RUN yarn install
 
 # Step 5: Bundle app source inside Docker image
 COPY . .
 
 # Step 6: Expose the port the app runs on
-EXPOSE 5000
+EXPOSE 3000
 
 # Step 7: Define the command to run the app
 # This will vary depending on how you've set up your package.json scripts
-CMD ["npm", "run", "dev"]
-# If you are using yarn, uncomment the next line and delete the above line
-# CMD ["yarn", "dev"]
+CMD ["yarn", "dev"]
