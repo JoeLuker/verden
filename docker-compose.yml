@@ -9,9 +9,9 @@ services:
       - "8080:8080"
       
   frontend:
-    build: ./frontend
+    build: ./verden-frontend
     volumes:
-      - ./frontend:/app
+      - ./verden-frontend:/app
       - /app/node_modules
     ports:
       - "5000:5000"
