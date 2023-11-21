@@ -1,9 +1,9 @@
 version: '3.8'
 services:
   backend:
-    build: .
+    build: ./backend
     volumes:
-      - ./app:/app
+      - ./backend:/app
       - go-modules:/go/pkg/mod
     ports:
       - "8080:8080"
