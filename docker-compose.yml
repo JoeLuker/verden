@@ -14,9 +14,7 @@ services:
       - ./verden-frontend:/app
       - /app/node_modules
     ports:
-      - "5000:5000"
-      - "35729:35729"
-
+      - "5173:5173"
 
   mongodb:
     image: mongo

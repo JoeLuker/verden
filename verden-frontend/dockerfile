@@ -14,7 +14,7 @@ RUN yarn install
 COPY . .
 
 # Step 6: Expose the port the app runs on
-EXPOSE 3000
+EXPOSE 5173
 
 # Step 7: Define the command to run the app
 # This will vary depending on how you've set up your package.json scripts
