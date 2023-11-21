@@ -5,6 +5,7 @@ import terser from '@rollup/plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import livereload from 'rollup-plugin-livereload';
 import css from 'rollup-plugin-css-only';
+import multiInput from 'rollup-plugin-multi-input';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -30,7 +31,7 @@ function serve() {
 }
 
 export default {
-	input: 'src/main.js',
+	input: ['src/**/*.js', 'public/**/*.js', 'src/main.js'],
 	output: {
 		sourcemap: true,
 		format: 'iife',
@@ -47,6 +48,7 @@ export default {
 		// we'll extract any component CSS out into
 		// a separate file - better for performance
 		css({ output: 'bundle.css' }),
+		multiInput(),
 
 		// If you have external dependencies installed from
 		// npm, you'll most likely need these plugins. In
@@ -66,7 +68,7 @@ export default {
 
 		// Watch the `public` directory and refresh the
 		// browser on changes when not in production
-		!production && livereload('public'),
+		!production && livereload({ watch: 'public', delay: 200, usePolling: true }),
 
 		// If we're building for production (npm run build
 		// instead of npm run dev), minify
