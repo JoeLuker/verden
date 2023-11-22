@@ -10,7 +10,9 @@ import (
 func main() {
     // Setup your routes here
     http.HandleFunc("/start-simulation", startSimulationHandler)
-    // Add other handlers as needed
+
+    // Use the enableCORS middleware for all routes
+    http.Handle("/", enableCORS(http.DefaultServeMux))
 
     // Start the server
     log.Println("Server starting on port 8080...")
