@@ -1,38 +1,46 @@
-// app/main.go
 package main
 
 import (
-	"context"
-	"fmt"
-	"github.com/JoeLuker/verden/db"
-	"github.com/JoeLuker/verden/economy"
-	"github.com/JoeLuker/verden/models"
+	"encoding/json"
+    "log"
+    "net/http"
+    "github.com/JoeLuker/verden/simulation" // Import your simulation package
 )
 
 func main() {
-	mongoClient := db.ConnectMongoDB()
-	defer mongoClient.Disconnect(context.Background())
+    // Setup your routes here
+    http.HandleFunc("/start-simulation", startSimulationHandler)
+    // Add other handlers as needed
 
-	redisClient := db.ConnectRedis()
-	defer redisClient.Close()
+    // Start the server
+    log.Println("Server starting on port 8080...")
+    if err := http.ListenAndServe(":8080", nil); err != nil {
+        log.Fatal("ListenAndServe:", err)
+    }
+}
 
-	// Sample items
-	items := map[string]models.Item{
-		"item1": {ID: "item1", Name: "Sword", Value: 100},
-		"item2": {ID: "item2", Name: "Shield", Value: 80},
-	}
+// Handler to start the economic simulation
+func startSimulationHandler(w http.ResponseWriter, r *http.Request) {
+    var params simulation.SimulationParams
+    err := json.NewDecoder(r.Body).Decode(&params)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
 
-	// Sample players
-	player1 := &models.Player{ID: "player1", Name: "Alice", GoldCoins: 200, Inventory: make(map[string]int)}
-	player2 := &models.Player{ID: "player2", Name: "Bob", GoldCoins: 150, Inventory: map[string]int{"item1": 1}}
+    result, err := simulation.RunSimulation(params)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 
-	// Simulate a transaction
-	err := economy.BuyItem(player1, player2, "item1", 1, items)
-	if err != nil {
-		fmt.Println("Transaction failed:", err)
-	} else {
-		fmt.Println("Transaction successful")
-		fmt.Printf("Player1: %+v\n", player1)
-		fmt.Printf("Player2: %+v\n", player2)
-	}
+    jsonResponse, err := json.Marshal(result)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    w.Write(jsonResponse)
 }
