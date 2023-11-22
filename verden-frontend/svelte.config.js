@@ -16,22 +16,7 @@ const config = {
 
 
 	},
-			// Add Vite configurations specific for Docker here
-			vite: {
-				server: {
-					hmr: {
-						// You might need to configure these options
-						// depending on your Docker setup
-						protocol: 'ws',
-						host: 'localhost',
-						port: 3000,
-						// Uncomment the following line to use polling
-						// watch: {
-						//     usePolling: true,
-						// },
-					},
-				},
-			},
+
 };
 
 export default config;

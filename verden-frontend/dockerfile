@@ -17,5 +17,4 @@ COPY . .
 EXPOSE 5173
 
 # Step 7: Define the command to run the app
-# This will vary depending on how you've set up your package.json scripts
 CMD ["yarn", "dev"]
