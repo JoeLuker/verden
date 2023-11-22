@@ -14,11 +14,23 @@ func main() {
     // Use the enableCORS middleware for all routes
     http.Handle("/", enableCORS(http.DefaultServeMux))
 
+	http.Handle("/redis-set", enableCORS(http.HandlerFunc(redisSetHandler)))
+    http.Handle("/redis-get", enableCORS(http.HandlerFunc(redisGetHandler)))
+
+
     // Start the server
     log.Println("Server starting on port 8080...")
     if err := http.ListenAndServe(":8080", nil); err != nil {
         log.Fatal("ListenAndServe:", err)
     }
+}
+
+func redisSetHandler(w http.ResponseWriter, r *http.Request) {
+    // your handler logic...
+}
+
+func redisGetHandler(w http.ResponseWriter, r *http.Request) {
+    // your handler logic...
 }
 
 // Handler to start the economic simulation
