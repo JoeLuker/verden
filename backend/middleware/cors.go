@@ -1,4 +1,4 @@
-package main // or the appropriate package name
+package middleware // or the appropriate package name
 
 import (
     "net/http"

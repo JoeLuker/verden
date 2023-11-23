@@ -4,6 +4,7 @@ import (
 	"encoding/json"
     "log"
     "net/http"
+    "github.com/JoeLuker/verden/middleware" // Import your simulation package
     "github.com/JoeLuker/verden/simulation" // Import your simulation package
 )
 
@@ -12,7 +13,7 @@ func main() {
     http.HandleFunc("/start-simulation", startSimulationHandler)
 
     // Use the enableCORS middleware for all routes
-    http.Handle("/", enableCORS(http.DefaultServeMux))
+    http.Handle("/", middleware.enableCORS(http.DefaultServeMux))
 
 	http.Handle("/redis-set", enableCORS(http.HandlerFunc(redisSetHandler)))
     http.Handle("/redis-get", enableCORS(http.HandlerFunc(redisGetHandler)))

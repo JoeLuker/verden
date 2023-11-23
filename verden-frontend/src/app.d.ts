@@ -9,4 +9,21 @@ declare global {
 	}
 }
 
+
+/// <reference types="svelte" />
+interface ImportMetaEnv {
+    VITE_API_URL: string;
+    // add other environment variables as needed
+}
+
+interface ImportMeta {
+    readonly env: ImportMetaEnv;
+}
+
+
+declare module '*.svg' {
+    const content: any;
+    export default content;
+}
+
 export {};
