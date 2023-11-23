@@ -10,39 +10,24 @@ import (
 	"github.com/JoeLuker/verden/simulation"
 )
 
-func main() {
-    ctx := context.Background()
-    
-	// Redis setup
-	rdb := db.ConnectRedis(ctx)
-	redisService := db.NewRedisService(rdb)
+func handleSimulation(w http.ResponseWriter, r *http.Request) {
+    if r.Method != "POST" {
+        http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
+        return
+    }
 
-	// Setup Redis routes
-	http.Handle("/redis-set", middleware.EnableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		redisSetHandler(w, r, redisService)
-	})))
-	http.Handle("/redis-get", middleware.EnableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		redisGetHandler(w, r, redisService)
-	})))
+    var params simulation.SimulationParams
+    if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
 
-	// MongoDB setup
-	// mongoService := db.NewMongoDBService()
-
-	// Setup MongoDB routes (if you have any specific routes for MongoDB)
-	// Example:
-	// http.HandleFunc("/mongo-insert", func(w http.ResponseWriter, r *http.Request) {
-	//     mongoInsertHandler(w, r, mongoService) // Using mongoService
-	// })
-
-	// Setup the start-simulation route
-	http.HandleFunc("/start-simulation", startSimulationHandler)
-
-	// Start the server
-	log.Println("Server starting on port 8080...")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatal("ListenAndServe:", err)
-	}
+    result := simulation.RunSimulation(params)
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(result)
 }
+
+
 
 // Handler for setting a value in Redis
 func redisSetHandler(w http.ResponseWriter, r *http.Request, service *db.RedisService) {
@@ -118,28 +103,36 @@ func redisGetHandler(w http.ResponseWriter, r *http.Request, service *db.RedisSe
 //     w.Write([]byte("Document inserted successfully"))
 // }
 
-// Handler to start the economic simulation
-func startSimulationHandler(w http.ResponseWriter, r *http.Request) {
-	var params simulation.SimulationParams
-	err := json.NewDecoder(r.Body).Decode(&params)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+func main() {
+    ctx := context.Background()
+    
+	// Redis setup
+	rdb := db.ConnectRedis(ctx)
+	redisService := db.NewRedisService(rdb)
 
-	result, err := simulation.RunSimulation(params)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// Setup Redis routes
+	http.Handle("/redis-set", middleware.EnableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		redisSetHandler(w, r, redisService)
+	})))
+	http.Handle("/redis-get", middleware.EnableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		redisGetHandler(w, r, redisService)
+	})))
 
-	jsonResponse, err := json.Marshal(result)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// MongoDB setup
+	// mongoService := db.NewMongoDBService()
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonResponse)
+	// Setup MongoDB routes (if you have any specific routes for MongoDB)
+	// Example:
+	// http.HandleFunc("/mongo-insert", func(w http.ResponseWriter, r *http.Request) {
+	//     mongoInsertHandler(w, r, mongoService) // Using mongoService
+	// })
+
+	// Setup the start-simulation route
+    http.HandleFunc("/simulate", handleSimulation)
+
+	// Start the server
+	log.Println("Server starting on port 8080...")
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatal("ListenAndServe:", err)
+	}
 }
