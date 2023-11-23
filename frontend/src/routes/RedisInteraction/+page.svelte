@@ -15,7 +15,7 @@
     let simulationResults: any = null; // To store simulation results
 
     async function saveToRedis() {
-      const response = await fetch('http://localhost:8080/redis-set', {
+      const response = await fetch('http://localhost:8080/api/redis-set', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -29,7 +29,7 @@
     }
   
     async function getFromRedis() {
-      const response = await fetch(`http://localhost:8080/redis-get?key=${key}`);
+      const response = await fetch(`http://localhost:8080/api/redis-get?key=${key}`);
       const data = await response.json();
       retrievedValue = data.value;
     }

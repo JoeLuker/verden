@@ -1,33 +1,32 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
-    "context"
+
 	"github.com/JoeLuker/verden/db"
 	"github.com/JoeLuker/verden/middleware"
 	"github.com/JoeLuker/verden/simulation"
 )
 
 func handleSimulation(w http.ResponseWriter, r *http.Request) {
-    if r.Method != "POST" {
-        http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
-        return
-    }
+	if r.Method != "POST" {
+		http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
+		return
+	}
 
-    var params simulation.SimulationParams
-    if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
-        return
-    }
+	var params simulation.SimulationParams
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-    result := simulation.RunSimulation(params)
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(result)
+	result := simulation.RunSimulation(params)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result)
 }
-
-
 
 // Handler for setting a value in Redis
 func redisSetHandler(w http.ResponseWriter, r *http.Request, service *db.RedisService) {
@@ -104,17 +103,17 @@ func redisGetHandler(w http.ResponseWriter, r *http.Request, service *db.RedisSe
 // }
 
 func main() {
-    ctx := context.Background()
-    
+	ctx := context.Background()
+
 	// Redis setup
 	rdb := db.ConnectRedis(ctx)
 	redisService := db.NewRedisService(rdb)
 
 	// Setup Redis routes
-	http.Handle("/redis-set", middleware.EnableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	http.Handle("/api/redis-set", middleware.EnableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		redisSetHandler(w, r, redisService)
 	})))
-	http.Handle("/redis-get", middleware.EnableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	http.Handle("/api/redis-get", middleware.EnableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		redisGetHandler(w, r, redisService)
 	})))
 
@@ -128,8 +127,8 @@ func main() {
 	// })
 
 	// Setup the start-simulation route
-    http.HandleFunc("/simulate", handleSimulation)
-
+	http.Handle("/api/simulate", middleware.EnableCORS(http.HandlerFunc(handleSimulation)))
+	
 	// Start the server
 	log.Println("Server starting on port 8080...")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
