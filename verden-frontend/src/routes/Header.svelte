@@ -20,7 +20,7 @@
 				<a href="/">Home</a>
 			</li>
 			<li aria-current={$page.url.pathname.startsWith('/RedisInteraction') ? 'page' : undefined}>
-				<a href="/RedisInteraction">RedisInteraction</a>
+				<a href="/RedisInteraction">Redis Test</a>
 			</li>
 			<li aria-current={$page.url.pathname.startsWith('/Simulation') ? 'page' : undefined}>
 				<a href="/Simulation">Simulation</a>

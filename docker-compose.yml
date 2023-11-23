@@ -7,7 +7,13 @@ services:
       - go-modules:/go/pkg/mod
     ports:
       - "8080:8080"
-      
+    depends_on:
+      - mongodb
+      - redis
+    environment:
+      - MONGO_URI=mongodb://${MONGO_APP_USERNAME}:${MONGO_APP_PASSWORD}@mongodb:27017/${MONGO_INITDB_DATABASE}
+      - REDIS_URI=redis://redis:6379
+
   frontend:
     build: ./verden-frontend
     volumes:
@@ -20,6 +26,12 @@ services:
     image: mongo
     volumes:
       - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+      MONGO_APP_USERNAME: ${MONGO_APP_USERNAME} # Pass the variable to the container
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD} # Pass the variable to the container
     ports:
       - "27017:27017"
 

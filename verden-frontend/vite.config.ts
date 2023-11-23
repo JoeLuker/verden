@@ -15,7 +15,8 @@ export default defineConfig({
 		},
 		// Uncomment the following line to use polling
 		watch: {
-		usePolling: true,
+		  usePolling: true,
+		  interval: 1000,
 		},
 	  },
 });

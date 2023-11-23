@@ -4,8 +4,8 @@ import (
     "net/http"
 )
 
-// enableCORS wraps an HTTP handler with CORS headers
-func enableCORS(next http.Handler) http.Handler {
+// EnableCORS wraps an HTTP handler with CORS headers
+func EnableCORS(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         // Set CORS headers
         w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173") // Adjust this to match your frontend's URL
