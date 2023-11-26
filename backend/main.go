@@ -31,6 +31,8 @@ func main() {
         handlers.RedisGetHandler(w, r, redisService)
     })))
 
+	http.Handle("/api/form-structure", middleware.EnableCORS(http.HandlerFunc(handlers.FormStructureHandler)))
+
     // Setup the simulation route
 	simHandler := handlers.NewSimulationHandler(simDataPersistence)
 	http.Handle("/api/simulate", middleware.EnableCORS(http.HandlerFunc(simHandler.HandleSimulation)))

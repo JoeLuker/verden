@@ -3,9 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-
-	// Removed unused "log" import
-
 	"github.com/JoeLuker/verden/db"
 	"github.com/JoeLuker/verden/simulation"
 )

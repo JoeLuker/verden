@@ -1,1 +1,1 @@
-mongo-init.sh text eol=lf
+mongo-init.js text eol=lf

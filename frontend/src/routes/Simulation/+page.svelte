@@ -6,8 +6,10 @@
   let simulationResult: SimulationResultType = null;
 
   function handleSimulation(event: CustomEvent<SimulationResultType>) {
-    simulationResult = event.detail;
-  }
+  console.log('Simulation complete event received:', event.detail);
+  simulationResult = event.detail;
+}
+
 </script>
 
 <section>

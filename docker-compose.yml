@@ -12,7 +12,8 @@ services:
       - redis
     environment:
       - MONGO_URI=mongodb://${MONGO_APP_USERNAME}:${MONGO_APP_PASSWORD}@mongodb:27017/${MONGO_INITDB_DATABASE}
-      - REDIS_URI=redis://redis:6379
+      - REDIS_URI=redis:6379
+      - CORS_ORIGIN=http://localhost:5173
 
   frontend:
     build: ./frontend
@@ -21,21 +22,18 @@ services:
       - /app/node_modules
     ports:
       - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8080
 
   mongodb:
     image: mongo
+
     volumes:
       - mongodb_data:/data/db
-      - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh # Mount the init script
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
-      MONGO_APP_USERNAME: ${MONGO_APP_USERNAME} # Pass the variable to the container
-      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD} # Pass the variable to the container
+      - ./mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js # Mount the init script
+    env_file: ./mongodb/.env-mongo
     ports:
-      - "27017:27017"
-    command: ["/docker-entrypoint-initdb.d/mongo-init.sh"]
+          - "27017:27017"
 
   redis:
     image: redis

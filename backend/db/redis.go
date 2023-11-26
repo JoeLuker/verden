@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"github.com/go-redis/redis/v8"
 	"github.com/JoeLuker/verden/models"
+	"os"
 )
 
 // RedisService struct to hold the Redis client
@@ -26,7 +27,7 @@ func NewRedisService(client *redis.Client) *RedisService {
 // ConnectRedis establishes a connection to the Redis server
 func ConnectRedis(ctx context.Context) *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "redis:6379", // Redis service name and port
+		Addr:     os.Getenv("REDIS_URI"), // Redis service name and port
 		Password: "",           // no password set
 		DB:       0,            // use default DB
 	})

@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -34,10 +33,9 @@ func NewMongoDBService() *MongoDBService {
 
 	err = client.Ping(context.Background(), nil)
 	if err != nil {
-		log.Fatalf(os.Getenv("MONGO_URI"))
 		log.Fatalf("Failed to ping MongoDB: %v", err)
 	}
-	fmt.Println("Connected to MongoDB successfully")
+	log.Println("Connected to MongoDB successfully")
 
 	databaseName := extractDatabaseName(mongoURI)
 
