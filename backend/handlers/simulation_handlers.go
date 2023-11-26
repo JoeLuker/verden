@@ -2,43 +2,56 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
+	// Removed unused "log" import
+
+	"github.com/JoeLuker/verden/db"
 	"github.com/JoeLuker/verden/simulation"
 )
 
-func HandleSimulation(w http.ResponseWriter, r *http.Request) {
+// SimulationHandler contains the dependencies for the simulation handlers.
+type SimulationHandler struct {
+	DataPersistence *db.SimulationDataPersistence
+}
+
+// NewSimulationHandler creates a new instance of SimulationHandler.
+func NewSimulationHandler(dataPersistence *db.SimulationDataPersistence) *SimulationHandler {
+	return &SimulationHandler{
+		DataPersistence: dataPersistence,
+	}
+}
+
+// HandleSimulation runs the simulation and handles the HTTP request.
+func (sh *SimulationHandler) HandleSimulation(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
-		log.Println("HandleSimulation: method not allowed")
 		return
 	}
 
 	var params simulation.SimulationParams
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		http.Error(w, "Invalid request body: "+err.Error(), http.StatusBadRequest)
-		log.Printf("HandleSimulation: invalid request body: %v\n", err)
 		return
 	}
 
-	// Validate the simulation parameters
 	if err := params.Validate(); err != nil {
 		http.Error(w, "Validation error: "+err.Error(), http.StatusBadRequest)
-		log.Printf("HandleSimulation: validation error: %v\n", err)
 		return
 	}
 
-	// Log the received request
-	log.Printf("HandleSimulation: Received request: %v", params)
-
-	// Run the simulation
 	result := simulation.RunSimulation(params)
 
-	// Set the content type and encode the result
+	// If you want to use the DataPersistence to save the result, uncomment and handle the error
+	err := sh.DataPersistence.SaveSimulationResult(r.Context(), &result)
+	if err != nil {
+		http.Error(w, "Failed to save simulation result: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(result); err != nil {
-		log.Printf("HandleSimulation: error encoding response: %v\n", err)
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
 	}
 }

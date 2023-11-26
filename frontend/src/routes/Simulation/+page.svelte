@@ -2,13 +2,12 @@
   import InputForm from './InputForm.svelte';
   import SimulationOutput from './SimulationOutput.svelte';
 
-  let simulationResult: any = null;  // Define a more specific type if possible
+  type SimulationResultType = { Result1: number; Result2: number; } | null;
+  let simulationResult: SimulationResultType = null;
 
-  // Function to handle the response from InputForm
-  function handleSimulation(event: any) {
-    simulationResult = event.detail; // Assuming the data is passed in the event's detail property
+  function handleSimulation(event: CustomEvent<SimulationResultType>) {
+    simulationResult = event.detail;
   }
-
 </script>
 
 <section>

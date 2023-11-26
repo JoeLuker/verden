@@ -1,25 +1,42 @@
 // File: simulation/economic_factors.go
 package simulation
 
-// EconomicFactors defines various economic factors in the D&D world.
+import (
+	"math"
+	"math/rand"
+)
+
 type EconomicFactors struct {
-    ResourceAvailability float64
-    MarketDemand         float64
-    PoliticalStability   float64
-    // Add other factors as needed
+	ResourceAvailability float64
+	MarketDemand         float64
+	PoliticalStability   float64
+	TradeRelations       float64 // New factor
+	// Add other factors as needed
 }
 
-// NewEconomicFactors creates a new instance of EconomicFactors with default values.
 func NewEconomicFactors() *EconomicFactors {
-    return &EconomicFactors{
-        ResourceAvailability: 100,  // Default value, adjust as needed
-        MarketDemand:         50,   // Default value, adjust as needed
-        PoliticalStability:   70,   // Default value, adjust as needed
-    }
+	return &EconomicFactors{
+		ResourceAvailability: 100,
+		MarketDemand:         50,
+		PoliticalStability:   70,
+		TradeRelations:       60,
+	}
 }
 
-// Update updates the economic factors based on some logic.
 func (e *EconomicFactors) Update() {
-    // Implement logic to update economic factors
-    // Example: e.ResourceAvailability -= 10
+	// Dynamic update logic based on various factors
+	e.ResourceAvailability = updateResourceAvailability(e.ResourceAvailability, e.PoliticalStability)
+	e.MarketDemand = updateMarketDemand(e.MarketDemand, e.TradeRelations)
+	e.PoliticalStability += (rand.Float64() * 10) - 5 // Random fluctuation
+	e.TradeRelations += (rand.Float64() * 10) - 5     // Random fluctuation
+}
+
+func updateResourceAvailability(currentValue float64, politicalStability float64) float64 {
+	// Logic to update resource availability based on political stability
+	return math.Max(0, currentValue+politicalStability*0.1-5)
+}
+
+func updateMarketDemand(currentValue float64, tradeRelations float64) float64 {
+	// Logic to update market demand based on trade relations
+	return math.Max(0, currentValue+tradeRelations*0.1-5)
 }

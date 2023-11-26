@@ -2,19 +2,34 @@
 package simulation
 
 type CharacterSkills struct {
-    CraftingAbility float64
-    Negotiation     float64
-    // Add other skills as needed
+	CraftingAbility float64
+	Negotiation     float64
+	CombatAbility   float64
+	MagicUse        float64
+	Diplomacy       float64
+	// Add other skills as needed
 }
 
 func NewCharacterSkills() *CharacterSkills {
-    return &CharacterSkills{
-        CraftingAbility: 80,  // Default value, adjust as needed
-        Negotiation:     60,  // Default value, adjust as needed
-    }
+	return &CharacterSkills{
+		CraftingAbility: 80,
+		Negotiation:     60,
+		CombatAbility:   50,
+		MagicUse:        40,
+		Diplomacy:       70,
+	}
 }
 
 func (c *CharacterSkills) Improve() {
-    // Implement logic to improve character skills
-    // Example: c.CraftingAbility += 5
+	// Example improvements with diminishing returns
+	c.CraftingAbility = improveSkill(c.CraftingAbility)
+	c.Negotiation = improveSkill(c.Negotiation)
+	c.CombatAbility = improveSkill(c.CombatAbility)
+	c.MagicUse = improveSkill(c.MagicUse)
+	c.Diplomacy = improveSkill(c.Diplomacy)
+}
+
+// improveSkill increases the skill value with diminishing returns
+func improveSkill(skill float64) float64 {
+	return skill + (100-skill)*0.05 // Increment decreases as skill approaches 100
 }
