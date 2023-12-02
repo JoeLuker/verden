@@ -5,9 +5,15 @@ export interface FormField {
   }
 
 export interface FormStructure {
-    [key: string]: FormField;
-  }
+  categories: Category[];
+}
+  
 
 export interface FormData {
     [key: string]: number | string;
+  }
+
+export interface Category {
+    Fields: FormField[];
+    // other properties of Category
   }
