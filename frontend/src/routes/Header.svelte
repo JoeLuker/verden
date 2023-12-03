@@ -22,9 +22,13 @@
 			<li aria-current={$page.url.pathname.startsWith('/RedisInteraction') ? 'page' : undefined}>
 				<a href="/RedisInteraction">Redis Test</a>
 			</li>
+			<li aria-current={$page.url.pathname.startsWith('/ProjectDiagram') ? 'page' : undefined}>
+				<a href="/ProjectDiagram">Project Diagram</a>
+			</li>
 			<li aria-current={$page.url.pathname.startsWith('/Simulation') ? 'page' : undefined}>
 				<a href="/Simulation">Simulation</a>
 			</li>
+
 		</ul>
 		<svg viewBox="0 0 2 3" aria-hidden="true">
 			<path d="M0,0 L0,3 C0.5,3 0.5,3 1,2 L2,0 Z" />

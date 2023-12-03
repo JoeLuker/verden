@@ -36,5 +36,8 @@
 	},
 	"type": "module",
 	"main": "index.js",
-	"license": "MIT"
+	"license": "MIT",
+	"dependencies": {
+		"gojs": "^2.3.12"
+	}
 }

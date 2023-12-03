@@ -1,8 +1,12 @@
 <script lang="ts">
-  export let simulationResult: { EconomyHealth: number; MarketTrends: number; } | null = null;
+  export let simulationResult: { [key: string]: number } | null = null;
 
-  function formatSimulationResult(result: { EconomyHealth: number; MarketTrends: number; }): string {
-    return `Economy Heatlth: ${result.EconomyHealth.toFixed(2)}, Market Trends: ${result.MarketTrends.toFixed(2)}`;
+  function formatSimulationResult(result: { [key: string]: number }): string {
+    let formattedResult = '';
+    for (let key in result) {
+      formattedResult += `${key}: ${result[key].toFixed(2)}, `;
+    }
+    return formattedResult.slice(0, -2); // remove trailing comma and space
   }
 </script>
 

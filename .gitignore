@@ -15,7 +15,8 @@
 *.out
 
 # Dependency directories
-tools/
+scripts/
+world-map/
 
 # Go workspace file
 go.work
