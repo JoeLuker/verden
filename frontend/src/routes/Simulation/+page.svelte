@@ -2,7 +2,7 @@
   import InputForm from './InputForm.svelte';
   import SimulationOutput from './SimulationOutput.svelte';
 
-  type SimulationResultType = { EconomicHealth: number; MarketTrends: number; } | null;
+  type SimulationResultType = { EconomyHealth: number; MarketTrends: number; } | null;
   let simulationResult: SimulationResultType = null;
 
   function handleSimulation(event: CustomEvent<SimulationResultType>) {
