@@ -4,40 +4,30 @@
 
     let myDiagram: go.Diagram;
 
-    onMount(() => {
+    onMount(async () => {
         const $ = go.GraphObject.make;
 
-        myDiagram = $(go.Diagram, "myDiagramDiv", {
-            initialContentAlignment: go.Spot.Center,
-            "undoManager.isEnabled": true
+        // Define the model (nodes and links)
+        myDiagram.model = $(go.GraphLinksModel, {
+            linkKeyProperty: 'key'  // this should be defined according to your data structure
         });
 
-        myDiagram.nodeTemplate =
-            $(go.Node, "Auto",
-                $(go.Shape, "RoundedRectangle", { strokeWidth: 0 },
-                    new go.Binding("fill", "color")),
-                $(go.TextBlock, { margin: 8 },
-                    new go.Binding("text", "key"))
-            );
+        // Fetch data and set it to the model
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/diagram`);
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Data fetched from MongoDB:', data);
 
-        // Define the model (nodes and links)
-        myDiagram.model = new go.GraphLinksModel(
-            [
-                { key: "Dynamic Project Diagram", color: "lightblue" },
-                { key: "Backend Service", color: "orange" },
-                { key: "CI/CD Pipeline", color: "lightgreen" },
-                { key: "Infrastructure Automation", color: "pink" },
-                { key: "Frontend", color: "yellow" },
-                // Add other components as necessary
-            ],
-            [
-                { from: "Dynamic Project Diagram", to: "Backend Service" },
-                { from: "Backend Service", to: "CI/CD Pipeline" },
-                { from: "CI/CD Pipeline", to: "Infrastructure Automation" },
-                { from: "Infrastructure Automation", to: "Frontend" },
-                // Define other relationships as necessary
-            ]);
+                // Assuming data.nodes and data.links exist
+                myDiagram.model.nodeDataArray = data.nodes;
+                myDiagram.model.linkDataArray = data.links;
+            }
+        } catch (error) {
+            console.error('Error fetching form structure:', error);
+        }
     });
 </script>
+
 
 <div id="myDiagramDiv" style="width:100%; height:400px; background-color: #DAE4E4;"></div>

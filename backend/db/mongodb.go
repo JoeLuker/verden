@@ -86,7 +86,11 @@ func (s *MongoDBService) InsertDocument(ctx context.Context, collectionName stri
 }
 
 // FindDocument retrieves a single document from the specified collection in MongoDB.
-func (s *MongoDBService) FindDocument(ctx context.Context, collectionName string, filter interface{}) *mongo.SingleResult {
-	collection := s.Client.Database(s.DatabaseName).Collection(collectionName)
-	return collection.FindOne(ctx, filter)
+func FindDocument(collection *mongo.Collection, filter bson.M) (bson.M, error) {
+	var result bson.M
+	err := collection.FindOne(context.TODO(), filter).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }

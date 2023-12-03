@@ -27,3 +27,21 @@ func MongoNodeInsertHandler(w http.ResponseWriter, r *http.Request, service *db.
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(fmt.Sprintf("Value set successfully with ID: %v", result.InsertedID)))
 }
+
+func MongoNodeGetHandler(w http.ResponseWriter, r *http.Request, service *db.MongoDBService) {
+	var node models.DiagramNode
+
+	if err := json.NewDecoder(r.Body).Decode(&node); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result, err := service.FindDocument(r.Context(), "Diagram", node)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(fmt.Sprintf("Value set successfully with ID: %v", result.InsertedID)))
+}
