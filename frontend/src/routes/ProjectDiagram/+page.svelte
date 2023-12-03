@@ -2,7 +2,7 @@
   import ProjectDiagram from './ProjectDiagram.svelte';
 
   let key = "";
-  let value = "";
+  let color = "";
 
   async function createNewNode() {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/create-diagram-node`, {
@@ -10,7 +10,7 @@
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ key, value }),
+        body: JSON.stringify({ key, color }),
       });
   
       if (response.ok) {
@@ -24,8 +24,8 @@
  <main>
     <h1> Project Digram </h1>
     <input type="text" bind:value={key} placeholder="Key" />
-    <input type="text" bind:value={value} placeholder="Value to store" />
-    <button on:click={createNewNode}>Save to Redis</button>
+    <input type="text" bind:value={color} placeholder="Color to store" />
+    <button on:click={createNewNode}>Save to MongoDB</button>
 
     <ProjectDiagram />
 </main>
