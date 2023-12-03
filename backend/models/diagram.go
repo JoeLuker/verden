@@ -1,8 +1,8 @@
 package models
 
 type DiagramNode struct {
-	Key   string `json:"name"`
-	Color string `json:"color"`
+	Key   string `json:"key" bson:"key"`
+	Color string `json:"color" bson:"color"`
 }
 
 type DiagramLink struct {
