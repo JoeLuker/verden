@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+
 	"github.com/JoeLuker/verden/db"
 	"github.com/JoeLuker/verden/simulation"
 )
@@ -27,6 +28,8 @@ func (sh *SimulationHandler) HandleSimulation(w http.ResponseWriter, r *http.Req
 	}
 
 	var params simulation.SimulationParams
+
+	// Now, decode the body into your struct as before
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		http.Error(w, "Invalid request body: "+err.Error(), http.StatusBadRequest)
 		return
@@ -39,12 +42,12 @@ func (sh *SimulationHandler) HandleSimulation(w http.ResponseWriter, r *http.Req
 
 	result := simulation.RunSimulation(params)
 
-	// If you want to use the DataPersistence to save the result, uncomment and handle the error
-	err := sh.DataPersistence.SaveSimulationResult(r.Context(), &result)
-	if err != nil {
-		http.Error(w, "Failed to save simulation result: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// // If you want to use the DataPersistence to save the result, uncomment and handle the error
+	// err := sh.DataPersistence.SaveSimulationResult(r.Context(), &result)
+	// if err != nil {
+	// 	http.Error(w, "Failed to save simulation result: "+err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(result); err != nil {

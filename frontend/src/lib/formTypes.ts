@@ -1,19 +1,20 @@
 export interface FormField {
-    type: string;
-    defaultValue: number | string;
-    placeholder: string;
-  }
-
-export interface FormStructure {
-  categories: Category[];
+  name: string;           // Added to match the JSON structure
+  type: string;
+  defaultValue: number;
+  placeholder: string;
 }
-  
-
-export interface FormData {
-    [key: string]: number | string;
-  }
 
 export interface Category {
-    Fields: FormField[];
-    // other properties of Category
-  }
+  categoryName: string;   // Updated to match the JSON key
+  fields: FormField[];    // Updated to lowercase 'f' to match the JSON key
+  // other properties of Category
+}
+
+export interface FormStructure {
+  categories: Category[]; // This already matches the JSON structure
+}
+
+export interface FormData {
+  [key: string]: number | string; // This seems fine as is
+}

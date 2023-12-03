@@ -12,7 +12,7 @@ func FormStructureHandler(w http.ResponseWriter, r *http.Request) {
     form := models.FormStructure{
         Categories: []models.FormCategory{
             {
-                CategoryName: "EconomyHealth",
+                CategoryName: "Skills",
                 Fields: []models.FormField{
                     {
                         Name:         "CraftingAbility",
@@ -47,7 +47,7 @@ func FormStructureHandler(w http.ResponseWriter, r *http.Request) {
                 },
             }, // Added missing comma here
             {
-                CategoryName: "MarketTrends",
+                CategoryName: "Economic",
                 Fields: []models.FormField{
                     {
                         Name:         "ResourceAvailability",

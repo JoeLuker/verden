@@ -10,16 +10,6 @@ type CharacterSkills struct {
 	// Add other skills as needed
 }
 
-func NewCharacterSkills() *CharacterSkills {
-	return &CharacterSkills{
-		CraftingAbility: 80,
-		Negotiation:     60,
-		CombatAbility:   50,
-		MagicUse:        40,
-		Diplomacy:       70,
-	}
-}
-
 func (c *CharacterSkills) Improve() {
 	// Example improvements with diminishing returns
 	c.CraftingAbility = improveSkill(c.CraftingAbility)

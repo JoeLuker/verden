@@ -28,5 +28,5 @@ def save_directory_contents_to_file(path, output_file_path):
                     contents = file.read()
                     output_file.write(f'{subindent}Contents:\n{contents}\n\n')
 
-save_directory_contents_to_file(r'./backend/simulation', './tools/output.txt')
+save_directory_contents_to_file(r'./frontend/src/routes/Simulation', './tools/output.txt')
 

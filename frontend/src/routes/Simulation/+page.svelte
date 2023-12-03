@@ -2,11 +2,10 @@
   import InputForm from './InputForm.svelte';
   import SimulationOutput from './SimulationOutput.svelte';
 
-  type SimulationResultType = { Result1: number; Result2: number; } | null;
+  type SimulationResultType = { EconomicHealth: number; MarketTrends: number; } | null;
   let simulationResult: SimulationResultType = null;
 
   function handleSimulation(event: CustomEvent<SimulationResultType>) {
-  console.log('Simulation complete event received:', event.detail);
   simulationResult = event.detail;
 }
 
@@ -17,3 +16,18 @@
   <InputForm on:simulationComplete={handleSimulation} />
   <SimulationOutput {simulationResult} />
 </section>
+
+<style>
+  section {
+    font-family: 'Arial', sans-serif;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  h1 {
+    color: #333;
+    text-align: center;
+  }
+</style>

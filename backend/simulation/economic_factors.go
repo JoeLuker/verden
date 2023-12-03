@@ -14,15 +14,6 @@ type EconomicFactors struct {
 	// Add other factors as needed
 }
 
-func NewEconomicFactors() *EconomicFactors {
-	return &EconomicFactors{
-		ResourceAvailability: 100,
-		MarketDemand:         50,
-		PoliticalStability:   70,
-		TradeRelations:       60,
-	}
-}
-
 func (e *EconomicFactors) Update() {
 	// Dynamic update logic based on various factors
 	e.ResourceAvailability = updateResourceAvailability(e.ResourceAvailability, e.PoliticalStability)
