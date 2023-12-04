@@ -12,6 +12,17 @@
             .attr('height', '400px')
             .style('background-color', '#DAE4E4');
 
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/get-diagram-id`);
+            if (response.ok) {
+                const diagramID = await response.text();
+                console.log('Diagram ID:', diagramID);
+                return diagramID;
+            }
+        } catch (error) {
+            console.error('Error fetching diagram ID:', error);
+        }
+
         // Fetch data and render the diagram
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/get-diagram`);
@@ -27,18 +38,6 @@
         }
     });
 
-    async function fetchDiagramID() {
-    try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/get-diagram-id`);
-        if (response.ok) {
-            const diagramID = await response.text();
-            console.log('Diagram ID:', diagramID);
-            return diagramID;
-        }
-    } catch (error) {
-        console.error('Error fetching diagram ID:', error);
-    }
-}
 
 
     function renderDiagram(nodes: { x: number, y: number }[], links: { source: { x: number, y: number }, target: { x: number, y: number } }[]) {

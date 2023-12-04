@@ -1,24 +1,23 @@
-// Existing code for admin authentication
+// Admin Authentication
 db.getSiblingDB('admin').auth(
     process.env.MONGO_INITDB_ROOT_USERNAME,
     process.env.MONGO_INITDB_ROOT_PASSWORD
 );
 
-// Existing user creation code
+// User Creation
 db.createUser({
     user: process.env.MONGO_APP_USERNAME,
     pwd: process.env.MONGO_APP_PASSWORD,
-    roles: ["readWrite"],
+    roles: [{role: "readWrite", db: "diagramDB"}]
 });
 
-// Switch to a new database (it will be created if it does not exist)
+// Switch to New Database (creates if does not exist)
 var newDB = db.getSiblingDB('diagramDB');
 
-// Create the structure for DiagramNode, DiagramLink, and DiagramStructure
+// Create the Structure for DiagramNode, DiagramLink, and DiagramStructure
 var diagramStructure = {
-    ID: new ObjectId(), // MongoDB shell can directly use ObjectId
     Nodes: [
-        { Key: "Dynamic Project Diagram", Color: "red" }, // Example, set your own color
+        { Key: "Dynamic Project Diagram", Color: "red" },
         { Key: "Backend Service", Color: "blue" },
         { Key: "CI/CD Pipeline", Color: "green" },
         { Key: "Infrastructure Automation", Color: "yellow" },
@@ -32,5 +31,5 @@ var diagramStructure = {
     ]
 };
 
-// Insert the structure into a collection
+// Insert the Structure into a Collection
 newDB.diagramStructures.insert(diagramStructure);

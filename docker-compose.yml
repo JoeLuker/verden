@@ -2,6 +2,7 @@ version: '3.8'
 services:
   backend:
     build: ./backend
+    image: verden-backend:latest  # Descriptive tag for the backend image
     volumes:
       - ./backend:/app
       - go-modules:/go/pkg/mod
@@ -17,6 +18,7 @@ services:
 
   frontend:
     build: ./frontend
+    image: verden-frontend:latest  # Descriptive tag for the frontend image
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -27,13 +29,12 @@ services:
 
   mongodb:
     image: mongo
-
     volumes:
       - mongodb_data:/data/db
       - ./mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js # Mount the init script
     env_file: ./mongodb/.env-mongo
     ports:
-          - "27017:27017"
+      - "27017:27017"
 
   redis:
     image: redis
