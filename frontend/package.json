@@ -20,6 +20,7 @@
 		"@sveltejs/adapter-auto": "^2.1.1",
 		"@sveltejs/kit": "^1.27.6",
 		"@types/cookie": "^0.5.1",
+		"@types/d3": "^7.4.3",
 		"@typescript-eslint/eslint-plugin": "^6.0.0",
 		"@typescript-eslint/parser": "^6.0.0",
 		"eslint": "^8.28.0",
@@ -38,6 +39,8 @@
 	"main": "index.js",
 	"license": "MIT",
 	"dependencies": {
+		"d3": "^7.8.5",
+		"d3.js": "^0.0.2-security",
 		"gojs": "^2.3.12"
 	}
 }

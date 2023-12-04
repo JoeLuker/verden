@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -86,11 +87,28 @@ func (s *MongoDBService) InsertDocument(ctx context.Context, collectionName stri
 }
 
 // FindDocument retrieves a single document from the specified collection in MongoDB.
-func FindDocument(collection *mongo.Collection, filter bson.M) (bson.M, error) {
+func (s *MongoDBService) FindDocument(ctx context.Context, collectionName string, filter bson.M) (bson.M, error) {
+	collection := s.Client.Database(s.DatabaseName).Collection(collectionName)
+
 	var result bson.M
-	err := collection.FindOne(context.TODO(), filter).Decode(&result)
+	err := collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
+		// Handle 'no document found' error separately if needed
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("no document found: %v", err)
+		}
 		return nil, err
 	}
+
 	return result, nil
+}
+
+func (s *MongoDBService) GetDiagramID(ctx context.Context) (string, error) {
+	collection := s.Client.Database(s.DatabaseName).Collection("diagramStructures")
+	var result bson.M
+	err := collection.FindOne(ctx, bson.M{}).Decode(&result) // Modify filter as needed
+	if err != nil {
+		return "", err
+	}
+	return result["_id"].(string), nil
 }

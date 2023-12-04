@@ -1,7 +1,6 @@
-// See https://kit.svelte.dev/docs/types#app
-// for information about these interfaces
 declare global {
 	namespace App {
+		// Uncomment or add as needed:
 		// interface Error {}
 		// interface Locals {}
 		// interface PageData {}
@@ -9,21 +8,23 @@ declare global {
 	}
 }
 
-
 /// <reference types="svelte" />
+
+// Declare ImportMetaEnv to hold environment variables
 interface ImportMetaEnv {
-    VITE_API_URL: string;
-    // add other environment variables as needed
+	VITE_API_URL: string;
+	// Add other environment variables as needed
 }
 
+// Extend the ImportMeta interface to include env
 interface ImportMeta {
-    readonly env: ImportMetaEnv;
+	readonly env: ImportMetaEnv;
 }
 
-
+// Existing declaration for importing SVGs
 declare module '*.svg' {
-    const content: any;
-    export default content;
+	const content: string;
+	export default content;
 }
 
 export {};
