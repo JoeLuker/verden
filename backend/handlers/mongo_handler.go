@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/JoeLuker/verden/db"
@@ -63,6 +64,7 @@ func MongoDiagramGetHandler(w http.ResponseWriter, r *http.Request, service *db.
 func GetDiagramIDHandler(w http.ResponseWriter, r *http.Request, service *db.MongoDBService) {
 	// Logic to retrieve the diagram ID
 	diagramID, err := service.GetDiagramID(r.Context())
+	log.Println("Diagram ID: ", diagramID)
 	if err != nil {
 		// handle error
 		http.Error(w, err.Error(), http.StatusInternalServerError)

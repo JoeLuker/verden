@@ -104,12 +104,15 @@ func (s *MongoDBService) FindDocument(ctx context.Context, collectionName string
 }
 
 func (s *MongoDBService) GetDiagramID(ctx context.Context) (string, error) {
+	log.Println("GetDiagramID: Start")
 	collection := s.Client.Database("diagramDB").Collection("diagramStructures")
-	var result bson.M
-	log.Println("Finding diagram ID")
-	err := collection.FindOne(ctx, bson.M{"Nodes": bson.M{"$exists": true}}).Decode(&result) // Modify filter as needed
+	var result models.DiagramStructure
+	log.Println("GetDiagramID: Finding diagram ID")
+	err := collection.FindOne(ctx, bson.M{"Nodes": bson.M{"$exists": true}}).Decode(&result)
 	if err != nil {
+		log.Printf("GetDiagramID: Error finding diagram ID: %v", err)
 		return "", err
 	}
-	return result["_id"].(string), nil
+	log.Printf("GetDiagramID: Found diagram ID: %s", result.ID.Hex()) // Now this line should work
+	return result.ID.Hex(), nil
 }
