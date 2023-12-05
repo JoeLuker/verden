@@ -25,11 +25,7 @@ func main() {
 	})))
 
 	http.Handle("/api/get-diagram", middleware.EnableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		handlers.MongoDiagramGetHandler(w, r, mongoService)
-	})))
-
-	http.Handle("/api/get-diagram-id", middleware.EnableCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		handlers.GetDiagramIDHandler(w, r, mongoService)
+		handlers.GetDiagramHandler(w, r, mongoService)
 	})))
 
 	// Simulation data persistence setup
