@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -86,33 +85,16 @@ func (s *MongoDBService) InsertDocument(ctx context.Context, collectionName stri
 	return collection.InsertOne(ctx, document)
 }
 
-// FindDocument retrieves a single document from the specified collection in MongoDB.
-func (s *MongoDBService) FindDocument(ctx context.Context, collectionName string, filter bson.M) (bson.M, error) {
-	collection := s.Client.Database(s.DatabaseName).Collection(collectionName)
-
-	var result bson.M
-	err := collection.FindOne(ctx, filter).Decode(&result)
-	if err != nil {
-		// Handle 'no document found' error separately if needed
-		if err == mongo.ErrNoDocuments {
-			return nil, fmt.Errorf("no document found: %v", err)
-		}
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func (s *MongoDBService) GetDiagramID(ctx context.Context) (string, error) {
-	log.Println("GetDiagramID: Start")
+func (s *MongoDBService) GetDiagram(ctx context.Context) (*models.DiagramStructure, error) {
+	log.Println("GetDiagram: Start")
 	collection := s.Client.Database("diagramDB").Collection("diagramStructures")
 	var result models.DiagramStructure
-	log.Println("GetDiagramID: Finding diagram ID")
+	log.Println("GetDiagram: Finding diagram")
 	err := collection.FindOne(ctx, bson.M{"Nodes": bson.M{"$exists": true}}).Decode(&result)
 	if err != nil {
-		log.Printf("GetDiagramID: Error finding diagram ID: %v", err)
-		return "", err
+		log.Printf("GetDiagram: Error finding diagram: %v", err)
+		return nil, err
 	}
-	log.Printf("GetDiagramID: Found diagram ID: %s", result.ID.Hex()) // Now this line should work
-	return result.ID.Hex(), nil
+	log.Printf("GetDiagram: Found diagram with ID: %s", result.ID)
+	return &result, nil
 }
