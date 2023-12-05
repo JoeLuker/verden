@@ -88,13 +88,17 @@ func (s *MongoDBService) InsertDocument(ctx context.Context, collectionName stri
 func (s *MongoDBService) GetDiagram(ctx context.Context) (*models.DiagramStructure, error) {
 	log.Println("GetDiagram: Start")
 	collection := s.Client.Database("diagramDB").Collection("diagramStructures")
+
 	var result models.DiagramStructure
 	log.Println("GetDiagram: Finding diagram")
-	err := collection.FindOne(ctx, bson.M{"Nodes": bson.M{"$exists": true}}).Decode(&result)
+
+	// Updated query to check for the existence of the 'nodes' field
+	err := collection.FindOne(ctx, bson.M{"nodes": bson.M{"$exists": true}}).Decode(&result)
 	if err != nil {
 		log.Printf("GetDiagram: Error finding diagram: %v", err)
 		return nil, err
 	}
-	log.Printf("GetDiagram: Found diagram with ID: %s", result.ID)
+
+	log.Printf("GetDiagram: Found diagram with ID: %s", result.ID.Hex()) // Using Hex() for ObjectID
 	return &result, nil
 }

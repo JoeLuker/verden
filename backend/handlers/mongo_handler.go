@@ -7,8 +7,10 @@ import (
 
 	"github.com/JoeLuker/verden/db"
 	"github.com/JoeLuker/verden/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// Handler for inserting a node into the database
 func MongoNodeInsertHandler(w http.ResponseWriter, r *http.Request, service *db.MongoDBService) {
 	var node models.DiagramNode
 
@@ -17,6 +19,9 @@ func MongoNodeInsertHandler(w http.ResponseWriter, r *http.Request, service *db.
 		return
 	}
 
+	// Assign a new ObjectID
+	node.ID = primitive.NewObjectID()
+
 	result, err := service.InsertDocument(r.Context(), "DiagramNodes", node)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -24,25 +29,26 @@ func MongoNodeInsertHandler(w http.ResponseWriter, r *http.Request, service *db.
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf("Value set successfully with ID: %v", result.InsertedID)))
+	w.Write([]byte(fmt.Sprintf("Node created successfully with ID: %v", result.InsertedID)))
 }
 
+// Handler for retrieving the entire diagram
 func GetDiagramHandler(w http.ResponseWriter, r *http.Request, service *db.MongoDBService) {
-    // Logic to retrieve the diagram
-    diagram, err := service.GetDiagram(r.Context())
-    if err != nil {
-        // handle error
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	diagram, err := service.GetDiagram(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    // Marshal the diagram into a JSON string
-    diagramJSON, err := json.Marshal(diagram)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	diagramJSON, err := json.Marshal(diagram)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    w.WriteHeader(http.StatusOK)
-    w.Write(diagramJSON)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(diagramJSON)
 }
+
+// Additional handler functions for links and other CRUD operations can be added here
