@@ -17,6 +17,6 @@
 # Dependency directories
 scripts/
 world-map/
-
+backend/tmp/
 # Go workspace file
 go.work

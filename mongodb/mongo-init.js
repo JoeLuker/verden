@@ -18,11 +18,11 @@ var newDB = db.getSiblingDB('diagramDB');
 // Updated to reflect D3's SimulationNodeDatum and SimulationLinkDatum types
 var diagramStructure = {
     Nodes: [
-        { id: "Dynamic Project Diagram", fx: 100, fy: 100, color: "red" },
-        { id: "Backend Service", fx: 200, fy: 200, color: "blue" },
-        { id: "CI/CD Pipeline", fx: 300, fy: 300, color: "green" },
-        { id: "Infrastructure Automation", fx: 400, fy: 400, color: "yellow" },
-        { id: "Frontend", fx: 500, fy: 500, color: "purple" }
+        { key: "Dynamic Project Diagram", fx: 100, fy: 100, color: "red" },
+        { key: "Backend Service", fx: 200, fy: 200, color: "blue" },
+        { key: "CI/CD Pipeline", fx: 300, fy: 300, color: "green" },
+        { key: "Infrastructure Automation", fx: 400, fy: 400, color: "yellow" },
+        { key: "Frontend", fx: 500, fy: 500, color: "purple" }
     ],
     Links: [
         { source: "Dynamic Project Diagram", target: "Backend Service" },
