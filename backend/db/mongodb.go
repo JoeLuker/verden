@@ -93,7 +93,7 @@ func (s *MongoDBService) GetDiagram(ctx context.Context) (*models.DiagramStructu
 	log.Println("GetDiagram: Finding diagram")
 
 	// Updated query to check for the existence of the 'nodes' field
-	err := collection.FindOne(ctx, bson.M{"nodes": bson.M{"$exists": true}}).Decode(&result)
+	err := collection.FindOne(ctx, bson.M{"Nodes": bson.M{"$exists": true}}).Decode(&result)
 	if err != nil {
 		log.Printf("GetDiagram: Error finding diagram: %v", err)
 		return nil, err
