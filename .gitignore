@@ -16,6 +16,8 @@ scripts/
 world-map/
 backend/tmp/
 
+verden-chart/charts/*
+
 # Go workspace file
 go.work
 
@@ -71,3 +73,6 @@ _cgo_export.*
 # Ignore generated files
 # Binaries for testing
 *_test.go
+
+# Do not include password file
+.ssh/
