@@ -1,0 +1,2162 @@
+/
+    Tiltfile
+    Contents:
+# Load Kubernetes service definitions
+k8s_yaml(['k8s/simulation-deployment.yaml', 'k8s/simulation-service.yaml', 'k8s/frontend-deployment.yaml', 'k8s/frontend-service.yaml', 'k8s/redis-deployment.yaml', 'k8s/redis-service.yaml'])
+
+# Docker image build instructions
+docker_build('simulation-image', './simulation')
+# Define a Docker build for the Svelte frontend
+docker_build('frontend-image', './frontend', 
+    live_update=[
+        fall_back_on('./frontend/vite.config.js'),
+        sync('./frontend/src', '/app/src'),
+        run(
+            'yarn install',
+            trigger=['./frontend/package.json', './frontend/yarn.lock']
+        )
+    ]
+)
+
+k8s_resource('frontend-deployment', port_forwards='5735:5173')
+
+
+    output.txt
+    Contents:
+
+
+frontend/
+    svelte.config.js
+    Contents:
+import adapter from '@sveltejs/adapter-auto';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+
+/** @type {import('@sveltejs/kit').Config} */
+const config = {
+	// Consult https://kit.svelte.dev/docs/integrations#preprocessors
+	// for more information about preprocessors
+	preprocess: vitePreprocess(),
+
+	kit: {
+		// adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
+		// If your environment is not supported or you settled on a specific environment, switch out the adapter.
+		// See https://kit.svelte.dev/docs/adapters for more information about adapters.
+		adapter: adapter()
+	}
+};
+
+export default config;
+
+
+    dockerfile
+    Contents:
+# Step 1: Use an official Node.js runtime as a parent image
+FROM node:20
+ENV YARN_CACHE_FOLDER=/cache/yarn
+
+# Step 2: Set the working directory inside the container to /app
+WORKDIR /app
+
+# Step 3: Copy package.json and package-lock.json (or yarn.lock)
+COPY package.json yarn.lock ./
+
+# Step 4: Install dependencies
+RUN --mount=type=cache,target=/cache/yarn \
+  yarn install
+
+# Step 5: Bundle app source inside Docker image
+COPY . .
+
+# Step 7: Define the command to run the app
+CMD ["yarn", "dev"]
+
+
+    README.md
+    Contents:
+# create-svelte
+
+Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+
+## Creating a project
+
+If you're seeing this, you've probably already done this step. Congrats!
+
+```bash
+# create a new project in the current directory
+npm create svelte@latest
+
+# create a new project in my-app
+npm create svelte@latest my-app
+```
+
+## Developing
+
+Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+
+```bash
+npm run dev
+
+# or start the server and open the app in a new browser tab
+npm run dev -- --open
+```
+
+## Building
+
+To create a production version of your app:
+
+```bash
+npm run build
+```
+
+You can preview the production build with `npm run preview`.
+
+> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+
+
+    package.json
+    Contents:
+{
+	"name": "frontend",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"lint": "prettier --check . && eslint .",
+		"format": "prettier --write ."
+	},
+	"devDependencies": {
+		"@vitejs/plugin-react-refresh": "^1.3.1",
+		"@sveltejs/adapter-auto": "^3.0.0",
+		"@sveltejs/kit": "^2.0.0",
+		"@sveltejs/vite-plugin-svelte": "^3.0.0",
+		"@types/eslint": "8.56.0",
+		"@typescript-eslint/eslint-plugin": "^6.0.0",
+		"@typescript-eslint/parser": "^6.0.0",
+		"@fontsource/fira-mono": "^5.0.8",
+		"eslint": "^8.56.0",
+		"eslint-config-prettier": "^9.1.0",
+		"eslint-plugin-svelte": "^2.35.1",
+		"prettier": "^3.1.1",
+		"prettier-plugin-svelte": "^3.1.2",
+		"svelte": "^4.2.7",
+		"svelte-check": "^3.6.0",
+		"tslib": "^2.4.1",
+		"typescript": "^5.0.0",
+		"vite": "^5.0.3",
+		"d3-force": "^3.0.0"
+	},
+	"type": "module"
+}
+
+
+    tsconfig.json
+    Contents:
+{
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"sourceMap": true,
+		"strict": true,
+		"moduleResolution": "bundler"
+	}
+	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
+	//
+	// If you want to overwrite includes/excludes, make sure to copy over the relevant includes/excludes
+	// from the referenced tsconfig.json - TypeScript does not merge them in
+}
+
+
+    vite.config.ts
+    Contents:
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vite';
+import reactRefresh from '@vitejs/plugin-react-refresh'
+
+export default defineConfig({
+	plugins: [sveltekit(), reactRefresh()],
+	server: {
+	  hmr: {
+		clientPort: process.env.VITE_CLIENT_PORT || null
+	  }
+	}
+});
+
+
+    src/
+        app.d.ts
+        Contents:
+declare global {
+	namespace App {
+		// Uncomment or add as needed:
+		// interface Error {}
+		// interface Locals {}
+		// interface PageData {}
+		// interface Platform {}
+	}
+}
+
+/// <reference types="svelte" />
+
+// Declare ImportMetaEnv to hold environment variables
+interface ImportMetaEnv {
+	VITE_API_URL: string;
+	// Add other environment variables as needed
+}
+
+// Extend the ImportMeta interface to include env
+interface ImportMeta {
+	readonly env: ImportMetaEnv;
+}
+
+// Existing declaration for importing SVGs
+declare module '*.svg' {
+	const content: string;
+	export default content;
+}
+
+export {};
+
+
+        app.html
+        Contents:
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
+
+
+        routes/
+            +page.svelte
+            Contents:
+<script>
+	function handleClick() {
+		alert('no more alerts');
+	}
+</script>
+
+<svelte:head>
+	<title>Home</title>
+	<meta name="description" content="Svelte demo app" />
+</svelte:head>
+
+<section>
+
+
+	<h1>
+		Hi Soph!
+	</h1>
+
+	<button on:click={handleClick}> Click me </button>
+
+</section>
+
+<style>
+	section {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		flex: 0.6;
+	}
+
+	h1 {
+		width: 100%;
+	}
+
+	button {
+    background-color: #ff3e00; /* Svelte's signature orange */
+    border: 2px solid transparent; /* Transparent border */
+    color: white; /* White text */
+    padding: 10px 20px; /* Comfortable padding */
+    text-align: center; /* Centered text */
+    text-decoration: none; /* No underline */
+    display: inline-block; /* Inline-block display */
+    font-size: 16px; /* Suitable font size */
+    font-weight: bold; /* Bold text */
+    margin: 5px; /* Slight margin */
+    cursor: pointer; /* Pointer cursor on hover */
+    border-radius: 4px; /* Slightly rounded corners */
+    transition: background-color 0.3s, border-color 0.3s; /* Smooth transition for background and border color */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+	}
+
+	button:hover, button:focus {
+		background-color: #e63900; /* Slightly darker orange when hovered/focused */
+		border-color: #fff; /* White border on hover/focus */
+		outline: none; /* Remove outline */
+	}
+
+</style>
+
+
+            Header.svelte
+            Contents:
+<script>
+	import { page } from '$app/stores';
+	import logo from '$lib/images/svelte-logo.svg';
+	import github from '$lib/images/github.svg';
+</script>
+
+<header>
+	<div class="corner">
+		<a href="https://svelte.dev">
+			<img src={logo} alt="Svelte" />
+		</a>
+	</div>
+
+	<nav>
+		<svg viewBox="0 0 2 3" aria-hidden="true">
+			<path d="M0,0 L1,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
+		</svg>
+		<ul>
+			<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
+				<a href="/">Home</a>
+			</li>
+			<li aria-current={$page.url.pathname.startsWith('/RedisInteraction') ? 'page' : undefined}>
+				<a href="/RedisInteraction">Redis Test</a>
+			</li>
+			<li aria-current={$page.url.pathname.startsWith('/ProjectDiagram') ? 'page' : undefined}>
+				<a href="/ProjectDiagram">Project Diagram</a>
+			</li>
+			<li aria-current={$page.url.pathname.startsWith('/Simulation') ? 'page' : undefined}>
+				<a href="/Simulation">Simulation</a>
+			</li>
+
+		</ul>
+		<svg viewBox="0 0 2 3" aria-hidden="true">
+			<path d="M0,0 L0,3 C0.5,3 0.5,3 1,2 L2,0 Z" />
+		</svg>
+	</nav>
+
+	<div class="corner">
+		<a href="https://github.com/sveltejs/kit">
+			<img src={github} alt="GitHub" />
+		</a>
+	</div>
+
+</header>
+
+<style>
+	header {
+		display: flex;
+		justify-content: space-between;
+	}
+
+	.corner {
+		width: 3em;
+		height: 3em;
+	}
+
+	.corner a {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+	}
+
+	.corner img {
+		width: 2em;
+		height: 2em;
+		object-fit: contain;
+	}
+
+	nav {
+		display: flex;
+		justify-content: center;
+		--background: rgba(255, 255, 255, 0.7);
+	}
+
+	svg {
+		width: 2em;
+		height: 3em;
+		display: block;
+	}
+
+	path {
+		fill: var(--background);
+	}
+
+	ul {
+		position: relative;
+		padding: 0;
+		margin: 0;
+		height: 3em;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		list-style: none;
+		background: var(--background);
+		background-size: contain;
+	}
+
+	li {
+		position: relative;
+		height: 100%;
+	}
+
+	li[aria-current='page']::before {
+		--size: 6px;
+		content: '';
+		width: 0;
+		height: 0;
+		position: absolute;
+		top: 0;
+		left: calc(50% - var(--size));
+		border: var(--size) solid transparent;
+		border-top: var(--size) solid var(--color-theme-1);
+	}
+
+	nav a {
+		display: flex;
+		height: 100%;
+		align-items: center;
+		padding: 0 0.5rem;
+		color: var(--color-text);
+		font-weight: 700;
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		text-decoration: none;
+		transition: color 0.2s linear;
+	}
+
+	a:hover {
+		color: var(--color-theme-1);
+	}
+</style>
+
+            styles.css
+            Contents:
+@import '@fontsource/fira-mono';
+
+:root {
+	--font-body: Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+		Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+	--font-mono: 'Fira Mono', monospace;
+	--color-bg-0: rgb(202, 216, 228);
+	--color-bg-1: hsl(209, 36%, 86%);
+	--color-bg-2: hsl(224, 44%, 95%);
+	--color-theme-1: #ff3e00;
+	--color-theme-2: #4075a6;
+	--color-text: rgba(0, 0, 0, 0.7);
+	--column-width: 42rem;
+	--column-margin-top: 4rem;
+	font-family: var(--font-body);
+	color: var(--color-text);
+}
+
+body {
+	min-height: 100vh;
+	margin: 0;
+	background-attachment: fixed;
+	background-color: var(--color-bg-1);
+	background-size: 100vw 100vh;
+	background-image: radial-gradient(
+			50% 50% at 50% 50%,
+			rgba(255, 255, 255, 0.75) 0%,
+			rgba(255, 255, 255, 0) 100%
+		),
+		linear-gradient(180deg, var(--color-bg-0) 0%, var(--color-bg-1) 15%, var(--color-bg-2) 50%);
+}
+
+h1,
+h2,
+p {
+	font-weight: 400;
+}
+
+p {
+	line-height: 1.5;
+}
+
+a {
+	color: var(--color-theme-1);
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+h1 {
+	font-size: 2rem;
+	text-align: center;
+}
+
+h2 {
+	font-size: 1rem;
+}
+
+pre {
+	font-size: 16px;
+	font-family: var(--font-mono);
+	background-color: rgba(255, 255, 255, 0.45);
+	border-radius: 3px;
+	box-shadow: 2px 2px 6px rgb(255 255 255 / 25%);
+	padding: 0.5em;
+	overflow-x: auto;
+	color: var(--color-text);
+}
+
+.text-column {
+	display: flex;
+	max-width: 48rem;
+	flex: 0.6;
+	flex-direction: column;
+	justify-content: center;
+	margin: 0 auto;
+}
+
+input,
+button {
+	font-size: inherit;
+	font-family: inherit;
+}
+
+button:focus:not(:focus-visible) {
+	outline: none;
+}
+
+@media (min-width: 720px) {
+	h1 {
+		font-size: 2.4rem;
+	}
+}
+
+.visually-hidden {
+	border: 0;
+	clip: rect(0 0 0 0);
+	height: auto;
+	margin: 0;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+	white-space: nowrap;
+}
+
+
+            +page.ts
+            Contents:
+// since there's no dynamic data here, we can prerender
+// it so that it gets served as a static asset in production
+export const prerender = true;
+
+
+            +layout.svelte
+            Contents:
+<script>
+	import Header from './Header.svelte';
+	import './styles.css';
+</script>
+
+<div class="app">
+	<Header />
+
+	<main>
+		<slot />
+	</main>
+</div>
+
+<style>
+	.app {
+		display: flex;
+		flex-direction: column;
+		min-height: 100vh;
+	}
+
+	main {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		padding: 1rem;
+		width: 100%;
+		max-width: 64rem;
+		margin: 0 auto;
+		box-sizing: border-box;
+	}
+</style>
+
+
+            RedisInteraction/
+                +page.svelte
+                Contents:
+<script lang="ts">
+    import { onMount, createEventDispatcher } from 'svelte';
+    const dispatch = createEventDispatcher();
+    let key = "";
+    let value = "";
+    let retrievedValue = "";
+    type SimulationParams = {
+        [key: string]: any;  // This allows any string as a key and any type as a value
+        someNumericParam: number;  // You can still define known properties
+    };
+
+    let simulationParams: SimulationParams = {
+        someNumericParam: 0,
+    };
+    let simulationResults: any = null; // To store simulation results
+
+    async function saveToRedis() {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/redis-set`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ key, value }),
+      });
+  
+      if (response.ok) {
+        console.log("Value saved to Redis");
+      }
+    }
+  
+    async function getFromRedis() {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/redis-get?key=${key}`);
+      const data = await response.json();
+      retrievedValue = data.value;
+    }
+  </script>
+  
+
+  
+  <main>
+    <h1> Redis Test </h1>
+    <div>
+      <input type="text" bind:value={key} placeholder="Key" />
+      <input type="text" bind:value={value} placeholder="Value to store" />
+      <button on:click={saveToRedis}>Save to Redis</button>
+    
+      <button on:click={getFromRedis}>Retrieve from Redis</button>
+      {#if retrievedValue}
+        <p>Retrieved Value: {retrievedValue}</p>
+      {/if}
+    </div>
+</main>
+
+<style>
+    /* Add your CSS here */
+</style>
+
+            Simulation/
+                SimulationOutput.svelte
+                Contents:
+<script lang="ts">
+  export let simulationResult: { [key: string]: number } | null = null;
+
+  function formatSimulationResult(result: { [key: string]: number }): string {
+    let formattedResult = '';
+    for (let key in result) {
+      formattedResult += `${key}: ${result[key].toFixed(2)}, `;
+    }
+    return formattedResult.slice(0, -2); // remove trailing comma and space
+  }
+</script>
+
+{#if simulationResult}
+  <div>
+    <h2>Simulation Results</h2>
+    <p>{formatSimulationResult(simulationResult)}</p>
+  </div>
+{:else}
+  <p>No results to display</p>
+{/if}
+
+<style>
+  div {
+  background-color: #f2f2f2;
+  padding: 15px;
+  border-radius: 5px;
+  margin-top: 20px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  color: #4CAF50;
+  margin-bottom: 10px;
+}
+
+p {
+  font-size: 16px;
+  color: #333;
+}
+
+</style>
+
+                +page.svelte
+                Contents:
+<script lang="ts">
+  import InputForm from './InputForm.svelte';
+  import SimulationOutput from './SimulationOutput.svelte';
+
+  type SimulationResultType = { EconomyHealth: number; MarketTrends: number; } | null;
+  let simulationResult: SimulationResultType = null;
+
+  function handleSimulation(event: CustomEvent<SimulationResultType>) {
+  simulationResult = event.detail;
+}
+
+</script>
+
+<section>
+  <h1>Economic Simulation</h1>
+  <InputForm on:simulationComplete={handleSimulation} />
+  <SimulationOutput {simulationResult} />
+</section>
+
+<style>
+  section {
+    font-family: 'Arial', sans-serif;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  h1 {
+    color: #333;
+    text-align: center;
+  }
+</style>
+
+                InputForm.svelte
+                Contents:
+<script lang="ts">
+  import { createEventDispatcher, onMount } from 'svelte';
+  import type { FormField, FormStructure, FormData, Category } from '$lib/types/formTypes';
+
+  const dispatch = createEventDispatcher();
+  let formStructure: FormStructure = { categories: [] };
+  let formData: FormData = {};
+
+  onMount(async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/form-structure`);
+      if (response.ok) {
+        const data = await response.json();
+        formStructure.categories = data.categories;
+        formStructure.categories.forEach((category: Category) => {
+          formData[category.categoryName] = {}; // Create a nested object for each category
+          category.fields.forEach((field: FormField) => {
+            formData[category.categoryName][field.name] = field.defaultValue;
+          });
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching form structure:', error);
+    }
+  });
+
+  async function submitForm(event: SubmitEvent) {
+    event.preventDefault();
+    console.log(formData)
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/simulate`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to run simulation: ${errorText}`);
+      }
+
+      const simulationResults = await response.json();
+      dispatch('simulationComplete', simulationResults);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Error:', error.message);
+        alert(error.message);
+      }
+    }
+  }
+</script>
+
+<form on:submit|preventDefault={submitForm}>
+  {#each formStructure.categories as category}
+    <fieldset>
+      <legend>{category.categoryName}</legend>
+      {#each category.fields as field}
+        <div class="form-group">
+          <label for={`${category.categoryName}-${field.name}`}>{field.name}</label>
+          <input id={`${category.categoryName}-${field.name}`}
+                 bind:value={formData[category.categoryName][field.name]}
+                 type="number" />
+        </div>
+      {/each}
+    </fieldset>
+  {/each}
+  <button type="submit">Submit</button>
+</form>
+
+<style>
+  form {
+  display: grid;
+  grid-gap: 20px;
+  margin-top: 20px;
+}
+
+fieldset {
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+legend {
+  padding: 0 10px;
+  font-weight: bold;
+  color: #444;
+}
+
+.form-group {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  align-items: center;
+  grid-gap: 10px;
+}
+
+.form-group label {
+  text-align: right;
+  font-size: 14px;
+}
+
+.form-group input[type="number"] {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button[type="submit"] {
+  width: 100%;
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover {
+  background-color: #45a049;
+}
+
+</style>
+
+            ProjectDiagram/
+                +page.svelte
+                Contents:
+<script lang="ts">
+  import ProjectDiagram from './ProjectDiagram.svelte';
+  import { onMount } from 'svelte';
+  import type { SimulationNodeDatum, SimulationLinkDatum } from 'd3';
+  import { fetchDiagramData } from './services/apiService';
+
+  let error: string = '';
+  let nodes: SimulationNodeDatum[] = [];
+  let links: SimulationLinkDatum<SimulationNodeDatum>[] = [];
+
+  onMount(async () => {
+    try {
+      const diagramData = await fetchDiagramData();
+      nodes = diagramData.nodes;
+      links = diagramData.links;
+    } catch (e) {
+      console.error('Error loading diagram:', e);
+      error = 'Unable to load the diagram. Please try again later.';
+    }
+  });
+</script>
+
+<main>
+  {#if error}
+    <p class="error-message">{error}</p>
+  {:else}
+    <ProjectDiagram {nodes} {links} />
+  {/if}
+</main>
+
+<style>
+  .error-message {
+    color: red;
+    /* Additional styling for error message */
+  }
+</style>
+
+
+                ProjectDiagram.svelte
+                Contents:
+<script lang="ts">
+  import DiagramCanvas from './components/DiagramCanvas.svelte';
+  import type { SimulationNodeDatum, SimulationLinkDatum } from 'd3';
+
+  export let nodes: SimulationNodeDatum[] = [];
+  export let links: SimulationLinkDatum<SimulationNodeDatum>[] = [];
+
+  function addNode(node: SimulationNodeDatum) {
+    nodes = [...nodes, node];
+  }
+
+  function addLink(link: SimulationLinkDatum<SimulationNodeDatum>) {
+    links = [...links, link];
+  }
+
+  // Implement other functions as needed
+</script>
+
+<main>
+  <DiagramCanvas {nodes} {links} />
+</main>
+
+
+                utils/
+                    d3Helpers.ts
+                    Contents:
+import * as d3 from 'd3';
+
+export const drawDiagram = (
+    nodes: d3.SimulationNodeDatum[],
+    links: d3.SimulationLinkDatum<d3.SimulationNodeDatum>[]
+) => {
+    const svg = d3.select<SVGSVGElement, unknown>('#diagram'); // Specify the element types
+    const width = +svg.attr("width");
+    const height = +svg.attr("height");
+
+    svg.selectAll("*").remove();
+
+    const zoom = d3.zoom<SVGSVGElement, unknown>()
+        .scaleExtent([1 / 2, 8])
+        .on("zoom", event => {
+            g.attr("transform", event.transform);
+        });
+
+    const g = svg.append("g");
+    svg.call(zoom); // Apply zoom to the SVG
+
+    const simulation = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id(d => (d as d3.SimulationNodeDatum).index?.toString() ?? ''))
+        .force("charge", d3.forceManyBody())
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+    const link = g.append("g")
+        .attr("stroke", "#999")
+        .attr("stroke-opacity", 0.6)
+        .selectAll("line")
+        .data(links)
+        .join("line")
+        .attr("x1", d => (d.source as d3.SimulationNodeDatum).x ?? 0)
+        .attr("y1", d => (d.source as d3.SimulationNodeDatum).y ?? 0)
+        .attr("x2", d => (d.target as d3.SimulationNodeDatum).x ?? 0)
+        .attr("y2", d => (d.target as d3.SimulationNodeDatum).y ?? 0);
+
+    // Node rendering
+    const node = g.append("g")
+      .selectAll<SVGCircleElement, d3.SimulationNodeDatum>("circle")
+      .data(nodes)
+      .join("circle")
+      .attr("r", 20)
+      .attr("fill", "blue");
+
+      node.call(drag(simulation));
+
+    // Drag functionality
+    function drag(simulation: d3.Simulation<d3.SimulationNodeDatum, undefined>) {
+        function dragstarted(event: d3.D3DragEvent<SVGCircleElement, d3.SimulationNodeDatum, d3.SimulationNodeDatum>) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+
+        function dragged(event: d3.D3DragEvent<SVGCircleElement, d3.SimulationNodeDatum, d3.SimulationNodeDatum>) {
+            event.subject.fx = event.x;
+            event.subject.fy = event.y;
+        }
+
+        function dragended(event: d3.D3DragEvent<SVGCircleElement, d3.SimulationNodeDatum, d3.SimulationNodeDatum>) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        return d3.drag<SVGCircleElement, d3.SimulationNodeDatum>()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended);
+    }
+
+    // Tooltip setup
+    const tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("position", "absolute")
+        .style("visibility", "hidden")
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "1px")
+        .style("border-radius", "5px")
+        .style("padding", "10px");
+
+    node.on("mouseover", (event, d) => {
+        tooltip.html(`Node: ${d.index}`)
+            .style("visibility", "visible")
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 10) + "px");
+    })
+    .on("mouseout", () => {
+        tooltip.style("visibility", "hidden");
+    });
+
+    // Update simulation on every tick
+    simulation.on("tick", () => {
+        link
+            .attr("x1", d => (d.source as d3.SimulationNodeDatum).x ?? 0)
+            .attr("y1", d => (d.source as d3.SimulationNodeDatum).y ?? 0)
+            .attr("x2", d => (d.target as d3.SimulationNodeDatum).x ?? 0)
+            .attr("y2", d => (d.target as d3.SimulationNodeDatum).y ?? 0);
+
+        node
+            .attr("cx", d => d.x ?? 0)
+            .attr("cy", d => d.y ?? 0);
+    });
+};
+
+
+                components/
+                    DiagramCanvas.svelte
+                    Contents:
+<script lang="ts">
+  import { onMount, afterUpdate } from 'svelte';
+  import { forceSimulation, forceLink, forceManyBody, forceCenter } from 'd3-force';
+  import type { Simulation, SimulationNodeDatum, SimulationLinkDatum, ForceLink } from 'd3';
+
+  export let nodes: SimulationNodeDatum[] = [];
+  export let links: SimulationLinkDatum<SimulationNodeDatum>[] = [];
+
+  let simulation: Simulation<SimulationNodeDatum, SimulationLinkDatum<SimulationNodeDatum>>;
+
+  onMount(() => {
+    simulation = forceSimulation(nodes)
+      .force('link', forceLink(links).id(d => `${d.index ?? 0}`)) // Ensuring the id is a string or number
+      .force('charge', forceManyBody())
+      .force('center', forceCenter(800 / 2, 600 / 2));
+
+    simulation.on('tick', () => {
+      // Update logic on tick
+    });
+  });
+
+  afterUpdate(() => {
+    const linkForce = simulation.force('link') as ForceLink<SimulationNodeDatum, SimulationLinkDatum<SimulationNodeDatum>>;
+    if (linkForce) {
+      linkForce.links(links);
+      simulation.nodes(nodes).alpha(1).restart();
+    }
+  });
+</script>
+
+<svg id="diagram" width="800" height="600">
+  <!-- SVG rendering logic goes here -->
+</svg>
+
+
+                services/
+                    apiService.ts
+                    Contents:
+import type { SimulationNodeDatum, SimulationLinkDatum } from 'd3';
+
+const API_URL = import.meta.env.VITE_API_URL;
+
+// Utility function to handle fetch requests
+async function makeFetchRequest<T>(url: string, options?: RequestInit): Promise<T> {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+        throw new Error(`Error in fetch request: ${response.statusText}`);
+    }
+    return response.json();
+}
+
+export const fetchDiagramData = async (): Promise<{ nodes: SimulationNodeDatum[], links: SimulationLinkDatum<SimulationNodeDatum>[] }> => {
+    return makeFetchRequest(`${API_URL}/api/get-diagram`);
+};
+
+export const createNode = async (node: SimulationNodeDatum): Promise<SimulationNodeDatum> => {
+    return makeFetchRequest(`${API_URL}/api/create-diagram-node`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(node)
+    });
+};
+
+export const createLink = async (link: SimulationLinkDatum<SimulationNodeDatum>): Promise<SimulationLinkDatum<SimulationNodeDatum>> => {
+    return makeFetchRequest(`${API_URL}/api/create-diagram-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(link)
+    });
+};
+
+
+k8s/
+    simulation-service.yaml
+    Contents:
+apiVersion: v1
+kind: Service
+metadata:
+  name: simulation-service
+spec:
+  type: NodePort
+  selector:
+    app: simulation
+  ports:
+  - protocol: TCP
+    port: 8088
+    targetPort: 8088
+
+
+    redis-service.yaml
+    Contents:
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+spec:
+  selector:
+    app: redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+
+
+    redis-deployment.yaml
+    Contents:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis
+        ports:
+        - containerPort: 6379
+
+
+    frontend-deployment.yaml
+    Contents:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: frontend-image
+        env:
+        - name: VITE_CLIENT_PORT
+          value: '5735'
+        ports:
+        - containerPort: 3000
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: "512Mi"
+
+
+    simulation-deployment.yaml
+    Contents:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simulation-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simulation
+  template:
+    metadata:
+      labels:
+        app: simulation
+    spec:
+      containers:
+      - name: simulation
+        image: simulation-image
+        ports:
+        - containerPort: 8088
+
+
+    frontend-service.yaml
+    Contents:
+
+
+spores/
+    dockerfile
+    Contents:
+# Start from the official Go image
+FROM golang:1.18
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the Go module files and download dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the rest of the application files
+COPY / .
+
+# Expose port 8080
+EXPOSE 8080
+
+
+# Might want to still use 'air' for development
+
+    main.go
+    Contents:
+package spores
+
+import (
+	"log"
+	"net/http"
+)
+
+func main() {
+	// ctx := context.Background()
+
+	// Database connections setup
+	// mongoService := db.NewMongoDBService()
+	// redisService := db.NewRedisService(db.ConnectRedis(ctx))
+
+	// HTTP route setup
+	// http.Handle("/api/data", middleware.EnableCORS(http.HandlerFunc(handlers.HandleDataRequest)))
+	// http.Handle("/api/user", middleware.EnableCORS(http.HandlerFunc(handlers.HandleUserRequest)))
+	// Add more routes as needed
+
+	// Start the server
+	log.Println("Spores service starting on port 8088...")
+	if err := http.ListenAndServe(":8088", nil); err != nil {
+		log.Fatal("ListenAndServe error:", err)
+	}
+}
+
+
+    middleware/
+        cors.go
+        Contents:
+package middleware // or the appropriate package name
+
+import (
+	"net/http"
+	"os"
+)
+
+// EnableCORS wraps an HTTP handler with CORS headers
+func EnableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		allowedOrigin := os.Getenv("CORS_ORIGIN")
+		// Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		// If it's a preflight OPTIONS request, send an OK response
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+
+    models/
+        diagram.go
+        Contents:
+package models
+
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
+type DiagramNode struct {
+	ID    primitive.ObjectID `json:"id" bson:"_id"`
+	Color string             `json:"color" bson:"color"`
+	Fx    float64            `json:"fx,omitempty" bson:"fx,omitempty"` // Fixed x-coordinate (optional)
+	Fy    float64            `json:"fy,omitempty" bson:"fy,omitempty"` // Fixed y-coordinate (optional)
+}
+
+type DiagramLink struct {
+	Source string `json:"source" bson:"source"`
+	Target string `json:"target" bson:"target"`
+}
+
+type DiagramStructure struct {
+	ID    primitive.ObjectID `json:"id" bson:"_id"`
+	Nodes []DiagramNode      `json:"nodes"`
+	Links []DiagramLink      `json:"links"`
+}
+
+
+        user_data.go
+        Contents:
+package models
+
+type UserData struct {
+    UserID    string `json:"user_id"`
+    UserName  string `json:"user_name"`
+    Balance   float64 `json:"balance"`
+    // add other relevant fields
+}
+
+        simulation_form.go
+        Contents:
+package models
+
+type FormField struct {
+    Name         string      `json:"name"`
+    Type         string      `json:"type"`
+    DefaultValue interface{} `json:"defaultValue"`
+    Placeholder  string      `json:"placeholder"`
+}
+
+type FormCategory struct {
+    CategoryName string      `json:"categoryName"`
+    Fields       []FormField `json:"fields"`
+}
+
+type FormStructure struct {
+    Categories []FormCategory `json:"categories"`
+}
+
+
+    db/
+        mongodb.go
+        Contents:
+package db
+
+import (
+	"context"
+	"encoding/json"
+	"log"
+	"os"
+	"strings"
+
+	"github.com/JoeLuker/verden2/spores/models"
+	"github.com/go-redis/redis/v8"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+)
+
+type MongoDBService struct {
+	Client       *mongo.Client
+	DatabaseName string
+}
+
+// NewMongoDBService initializes MongoDBService with environment variables.
+func NewMongoDBService() *MongoDBService {
+	mongoURI := os.Getenv("MONGO_URI")
+	if mongoURI == "" {
+		log.Fatal("The MONGO_URI environment variable must be set.")
+	}
+
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
+	}
+
+	err = client.Ping(context.Background(), nil)
+	if err != nil {
+		log.Fatalf("Failed to ping MongoDB: %v", err)
+	}
+	log.Println("Connected to MongoDB successfully")
+
+	databaseName := extractDatabaseName(mongoURI)
+
+	return &MongoDBService{
+		Client:       client,
+		DatabaseName: databaseName,
+	}
+}
+
+// extractDatabaseName parses the database name from the MONGO_URI.
+func extractDatabaseName(uri string) string {
+	uriParts := strings.Split(uri, "/")
+	return uriParts[len(uriParts)-1]
+}
+
+// PersistToMongoDB saves data from Redis to MongoDB.
+func (service *MongoDBService) PersistToMongoDB(ctx context.Context, redisClient *redis.Client, userID string) error {
+	val, err := redisClient.Get(ctx, userID).Result()
+	if err != nil {
+		return err
+	}
+
+	var userData models.UserData
+	if err := json.Unmarshal([]byte(val), &userData); err != nil {
+		return err
+	}
+
+	collection := service.Client.Database(service.DatabaseName).Collection("users")
+	_, err = collection.InsertOne(ctx, userData)
+	return err
+}
+
+// RetrieveFromMongoDB gets user data from MongoDB and saves it to Redis.
+func (service *MongoDBService) RetrieveFromMongoDB(ctx context.Context, redisService *RedisService, userID string) error {
+	collection := service.Client.Database(service.DatabaseName).Collection("users")
+	var userData models.UserData
+	if err := collection.FindOne(ctx, bson.M{"user_id": userID}).Decode(&userData); err != nil {
+		return err
+	}
+
+	return redisService.SaveToRedis(ctx, &userData)
+}
+
+// InsertDocument adds a new document to the specified collection in MongoDB.
+func (s *MongoDBService) InsertDocument(ctx context.Context, collectionName string, document interface{}) (*mongo.InsertOneResult, error) {
+	collection := s.Client.Database(s.DatabaseName).Collection(collectionName)
+	return collection.InsertOne(ctx, document)
+}
+
+func (s *MongoDBService) GetDiagram(ctx context.Context) (*models.DiagramStructure, error) {
+	log.Println("GetDiagram: Start")
+	collection := s.Client.Database("diagramDB").Collection("diagramStructures")
+
+	var result models.DiagramStructure
+	log.Println("GetDiagram: Finding diagram")
+
+	// Updated query to check for the existence of the 'nodes' field
+	err := collection.FindOne(ctx, bson.M{"Nodes": bson.M{"$exists": true}}).Decode(&result)
+	if err != nil {
+		log.Printf("GetDiagram: Error finding diagram: %v", err)
+		return nil, err
+	}
+
+	log.Printf("GetDiagram: Found diagram with ID: %s", result.ID.Hex()) // Using Hex() for ObjectID
+	return &result, nil
+}
+
+
+        redis.go
+        Contents:
+// db/redis.go
+package db
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/JoeLuker/verden2/spores/models"
+	"github.com/go-redis/redis/v8"
+)
+
+// RedisService struct to hold the Redis client
+type RedisService struct {
+	Client *redis.Client
+}
+
+var RedisNil = redis.Nil
+
+// NewRedisService creates a new instance of RedisService
+func NewRedisService(client *redis.Client) *RedisService {
+	return &RedisService{Client: client}
+}
+
+// ConnectRedis establishes a connection to the Redis server
+func ConnectRedis(ctx context.Context) *redis.Client {
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("REDIS_URI"), // Redis service name and port
+		Password: "",                     // no password set
+		DB:       0,                      // use default DB
+	})
+
+	_, err := rdb.Ping(ctx).Result()
+	if err != nil {
+		log.Fatalf("Failed to connect to Redis: %v", err)
+	} else {
+		fmt.Println("Connected to Redis successfully")
+	}
+
+	return rdb
+}
+
+// In redis.go
+func (s *RedisService) Set(ctx context.Context, key string, value string) error {
+	return s.Client.Set(ctx, key, value, 0).Err()
+}
+
+func (s *RedisService) Get(ctx context.Context, key string) (string, error) {
+	val, err := s.Client.Get(ctx, key).Result()
+	if err == redis.Nil {
+		return "", nil // Key does not exist
+	} else if err != nil {
+		return "", err
+	}
+	return val, nil
+}
+
+func (service *RedisService) SaveToRedis(ctx context.Context, userData *models.UserData) error {
+	userDataJSON, err := json.Marshal(userData)
+	if err != nil {
+		return err
+	}
+
+	return service.Client.Set(ctx, userData.UserID, userDataJSON, 0).Err()
+}
+
+
+    handlers/
+        redis_handlers.go
+        Contents:
+package handlers
+
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+
+	"github.com/JoeLuker/verden2/spores/db"
+)
+
+// RedisSetHandler sets a value in Redis.
+func RedisSetHandler(w http.ResponseWriter, r *http.Request, service *db.RedisService) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var payload struct {
+		Key   string `json:"key"`
+		Value string `json:"value"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := service.Set(r.Context(), payload.Key, payload.Value); err != nil {
+		log.Printf("Error setting value in Redis: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Value set successfully"))
+}
+
+// RedisGetHandler retrieves a value from Redis.
+func RedisGetHandler(w http.ResponseWriter, r *http.Request, service *db.RedisService) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Only GET method is allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	key := r.URL.Query().Get("key")
+	if key == "" {
+		http.Error(w, "Key is required", http.StatusBadRequest)
+		return
+	}
+
+	value, err := service.Get(r.Context(), key)
+	if err == db.RedisNil {
+		http.Error(w, "Key not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		log.Printf("Error retrieving value from Redis: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"value": value})
+}
+
+
+        mongo_handler.go
+        Contents:
+package handlers
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+
+	"github.com/JoeLuker/verden2/spores/db"
+	"github.com/JoeLuker/verden2/spores/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+// Handler for inserting a node into the database
+func MongoNodeInsertHandler(w http.ResponseWriter, r *http.Request, service *db.MongoDBService) {
+	var node models.DiagramNode
+
+	if err := json.NewDecoder(r.Body).Decode(&node); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Assign a new ObjectID
+	node.ID = primitive.NewObjectID()
+
+	result, err := service.InsertDocument(r.Context(), "DiagramNodes", node)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(fmt.Sprintf("Node created successfully with ID: %v", result.InsertedID)))
+}
+
+// Handler for retrieving the entire diagram
+func GetDiagramHandler(w http.ResponseWriter, r *http.Request, service *db.MongoDBService) {
+	diagram, err := service.GetDiagram(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	diagramJSON, err := json.Marshal(diagram)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(diagramJSON)
+}
+
+// Additional handler functions for links and other CRUD operations can be added here
+
+
+        form_structure_handler.go
+        Contents:
+package handlers
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/JoeLuker/verden2/spores/models"
+)
+
+// FormStructureHandler creates a form for inputting simulation parameters.
+func FormStructureHandler(w http.ResponseWriter, r *http.Request) {
+	form := models.FormStructure{
+		Categories: []models.FormCategory{
+			{
+				CategoryName: "Skills",
+				Fields: []models.FormField{
+					{
+						Name:         "CraftingAbility",
+						Type:         "number",
+						DefaultValue: 80,
+						Placeholder:  "Enter Crafting Ability (0-100)",
+					},
+					{
+						Name:         "Negotiation",
+						Type:         "number",
+						DefaultValue: 60,
+						Placeholder:  "Enter Negotiation Skill (0-100)",
+					},
+					{
+						Name:         "CombatAbility",
+						Type:         "number",
+						DefaultValue: 50,
+						Placeholder:  "Enter Combat Ability (0-100)",
+					},
+					{
+						Name:         "MagicUse",
+						Type:         "number",
+						DefaultValue: 40,
+						Placeholder:  "Enter Magic Use (0-100)",
+					},
+					{
+						Name:         "Diplomacy",
+						Type:         "number",
+						DefaultValue: 70,
+						Placeholder:  "Enter Diplomacy (0-100)",
+					}, // Added missing comma here
+				},
+			}, // Added missing comma here
+			{
+				CategoryName: "Economic",
+				Fields: []models.FormField{
+					{
+						Name:         "ResourceAvailability",
+						Type:         "number",
+						DefaultValue: 100,
+						Placeholder:  "Enter Resource Availability (0-100)",
+					},
+					{
+						Name:         "MarketDemand",
+						Type:         "number",
+						DefaultValue: 50,
+						Placeholder:  "Enter Market Demand (0-100)",
+					},
+					{
+						Name:         "PoliticalStability",
+						Type:         "number",
+						DefaultValue: 70,
+						Placeholder:  "Enter Political Stability (0-100)",
+					},
+					{
+						Name:         "TradeRelations",
+						Type:         "number",
+						DefaultValue: 60,
+						Placeholder:  "Enter Trade Relations (0-100)",
+					}, // Added missing comma here
+				},
+			}, // Added missing comma here
+		},
+	} // Removed extra comma here
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(form)
+}
+
+
+simulation/
+    simulation_result_handler.go
+    Contents:
+// File: handlers/simulation_result_handler.go
+package simulation
+
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+)
+
+// HandleRetrieveSimulation handles requests to retrieve the latest simulation results.
+// HandleRetrieveSimulation handles requests to retrieve the latest simulation results.
+func HandleRetrieveSimulation(w http.ResponseWriter, r *http.Request, simDataPersistence *SimulationDataPersistence) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Only GET method is allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	ctx := r.Context()
+	result, err := simDataPersistence.RetrieveLatestSimulationResult(ctx)
+	if err != nil {
+		log.Printf("Error retrieving simulation result: %v\n", err)
+		http.Error(w, "Failed to retrieve simulation result", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(result); err != nil {
+		log.Printf("Failed to encode simulation result: %v\n", err)
+		http.Error(w, "Failed to process simulation result", http.StatusInternalServerError)
+	}
+}
+
+
+    simulation_params.go
+    Contents:
+// File: simulation/simulation_params.go
+package simulation
+
+import "errors"
+
+type SimulationParams struct {
+	Skills   *CharacterSkills
+	Economic *EconomicFactors
+}
+
+func (sp *SimulationParams) Validate() error {
+
+	// Validation logic for CharacterSkills
+	if sp.Skills == nil || !validateCharacterSkills(sp.Skills) {
+		return errors.New("invalid or missing CharacterSkills")
+	}
+
+	// Validation logic for EconomicFactors
+	if sp.Economic == nil || !validateEconomicFactors(sp.Economic) {
+		return errors.New("invalid or missing EconomicFactors")
+	}
+
+	return nil
+}
+
+func validateCharacterSkills(s *CharacterSkills) bool {
+	// Example: Validate if skills are within realistic ranges
+	return s.CraftingAbility >= 0 && s.CraftingAbility <= 100 &&
+		s.Negotiation >= 0 && s.Negotiation <= 100 &&
+		s.CombatAbility >= 0 && s.CombatAbility <= 100 &&
+		s.MagicUse >= 0 && s.MagicUse <= 100 &&
+		s.Diplomacy >= 0 && s.Diplomacy <= 100
+}
+
+func validateEconomicFactors(e *EconomicFactors) bool {
+	// Example: Validate if factors are within realistic ranges
+	return e.ResourceAvailability >= 0 && e.ResourceAvailability <= 100 &&
+		e.MarketDemand >= 0 && e.MarketDemand <= 100 &&
+		e.PoliticalStability >= 0 && e.PoliticalStability <= 100 &&
+		e.TradeRelations >= 0 && e.TradeRelations <= 100
+}
+
+
+    simulation.go
+    Contents:
+// File: simulation/simulation.go
+package simulation
+
+import "math/rand"
+
+func RunSimulation(params SimulationParams) SimulationResult {
+	// Introduce random event possibility
+	if rand.Float64() < 0.1 { // 10% chance of a random event
+		handleRandomEvent(params)
+	}
+
+	params.Economic.Update()
+	params.Skills.Improve()
+
+	economyHealth := calculateEconomyHealth(params.Economic, params.Skills)
+	marketTrends := calculateMarketTrends(params.Economic, params.Skills)
+
+	return SimulationResult{
+		EconomyHealth: economyHealth,
+		MarketTrends:  marketTrends,
+	}
+}
+
+func handleRandomEvent(params SimulationParams) {
+	// Placeholder for random event logic
+	// Example: params.Economic.ResourceAvailability *= 0.9
+}
+
+func calculateEconomyHealth(e *EconomicFactors, s *CharacterSkills) float64 {
+	// Updated logic for calculating economy health
+	return (e.ResourceAvailability + s.CraftingAbility) - e.MarketDemand
+}
+
+func calculateMarketTrends(e *EconomicFactors, s *CharacterSkills) float64 {
+	// Updated logic for calculating market trends
+	return e.PoliticalStability * s.Negotiation / 100
+}
+
+
+    random_events.go
+    Contents:
+// File: simulation/random_events.go
+package simulation
+
+import "math/rand"
+
+// RandomEvent represents a type of random event that can occur in the simulation.
+type RandomEvent struct {
+    EventType string
+    Impact    func(*SimulationParams)
+}
+
+// GenerateRandomEvent generates a random event based on the current state of the simulation.
+func GenerateRandomEvent(params *SimulationParams) *RandomEvent {
+    // List of possible random events
+    events := []RandomEvent{
+        {"MarketCrash", marketCrash},
+        {"ResourceDiscovery", resourceDiscovery},
+        {"PoliticalTurmoil", politicalTurmoil},
+    }
+
+    // Select a random event
+    selectedEvent := events[rand.Intn(len(events))]
+    return &selectedEvent
+}
+
+// marketCrash represents an economic downturn event.
+func marketCrash(params *SimulationParams) {
+    params.Economic.MarketDemand *= 0.8
+}
+
+// resourceDiscovery represents a sudden increase in resources.
+func resourceDiscovery(params *SimulationParams) {
+    params.Economic.ResourceAvailability *= 1.2
+}
+
+// politicalTurmoil represents a decrease in political stability.
+func politicalTurmoil(params *SimulationParams) {
+    params.Economic.PoliticalStability *= 0.9
+}
+
+
+    dockerfile
+    Contents:
+# Start from the official Go image
+FROM golang:1.22
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the Go module files and download dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the rest of the application files
+COPY / .
+
+# Expose port 8080
+EXPOSE 8080
+
+
+    economic_factors.go
+    Contents:
+// File: simulation/economic_factors.go
+package simulation
+
+import (
+	"math"
+	"math/rand"
+)
+
+type EconomicFactors struct {
+	ResourceAvailability float64
+	MarketDemand         float64
+	PoliticalStability   float64
+	TradeRelations       float64 // New factor
+	// Add other factors as needed
+}
+
+func (e *EconomicFactors) Update() {
+	// Dynamic update logic based on various factors
+	e.ResourceAvailability = updateResourceAvailability(e.ResourceAvailability, e.PoliticalStability)
+	e.MarketDemand = updateMarketDemand(e.MarketDemand, e.TradeRelations)
+	e.PoliticalStability += (rand.Float64() * 10) - 5 // Random fluctuation
+	e.TradeRelations += (rand.Float64() * 10) - 5     // Random fluctuation
+}
+
+func updateResourceAvailability(currentValue float64, politicalStability float64) float64 {
+	// Logic to update resource availability based on political stability
+	return math.Max(0, currentValue+politicalStability*0.1-5)
+}
+
+func updateMarketDemand(currentValue float64, tradeRelations float64) float64 {
+	// Logic to update market demand based on trade relations
+	return math.Max(0, currentValue+tradeRelations*0.1-5)
+}
+
+
+    simulation_result.go
+    Contents:
+// File: simulation/simulation_result.go
+package simulation
+
+type SimulationResult struct {
+	EconomyHealth float64
+	MarketTrends  float64
+}
+
+
+    unit_tests.go
+    Contents:
+// File: simulation/unit_tests.go
+package simulation
+
+import "testing"
+
+func TestImproveSkill(t *testing.T) {
+	initialSkill := 50.0
+	improvedSkill := improveSkill(initialSkill)
+	if improvedSkill <= initialSkill {
+		t.Errorf("Skill improvement failed to increase the skill value")
+	}
+}
+
+func TestUpdateResourceAvailability(t *testing.T) {
+	initialAvailability := 100.0
+	politicalStability := 70.0
+	updatedAvailability := updateResourceAvailability(initialAvailability, politicalStability)
+	if updatedAvailability >= initialAvailability {
+		t.Errorf("Resource availability update logic is not functioning as expected")
+	}
+}
+
+// Additional tests for other functions can be added here.
+
+
+    character_skills.go
+    Contents:
+// File: simulation/character_skills.go
+package simulation
+
+type CharacterSkills struct {
+	CraftingAbility float64
+	Negotiation     float64
+	CombatAbility   float64
+	MagicUse        float64
+	Diplomacy       float64
+	// Add other skills as needed
+}
+
+func (c *CharacterSkills) Improve() {
+	// Example improvements with diminishing returns
+	c.CraftingAbility = improveSkill(c.CraftingAbility)
+	c.Negotiation = improveSkill(c.Negotiation)
+	c.CombatAbility = improveSkill(c.CombatAbility)
+	c.MagicUse = improveSkill(c.MagicUse)
+	c.Diplomacy = improveSkill(c.Diplomacy)
+}
+
+// improveSkill increases the skill value with diminishing returns
+func improveSkill(skill float64) float64 {
+	return skill + (100-skill)*0.05 // Increment decreases as skill approaches 100
+}
+
+
+    simulation_handlers.go
+    Contents:
+package simulation
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+// SimulationHandler contains the dependencies for the simulation handlers.
+type SimulationHandler struct {
+	DataPersistence *SimulationDataPersistence
+}
+
+// NewSimulationHandler creates a new instance of SimulationHandler.
+func NewSimulationHandler(dataPersistence *SimulationDataPersistence) *SimulationHandler {
+	return &SimulationHandler{
+		DataPersistence: dataPersistence,
+	}
+}
+
+// HandleSimulation runs the simulation and handles the HTTP request.
+func (sh *SimulationHandler) HandleSimulation(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var params SimulationParams
+
+	// Now, decode the body into your struct as before
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		http.Error(w, "Invalid request body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := params.Validate(); err != nil {
+		http.Error(w, "Validation error: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result := RunSimulation(params)
+
+	// // If you want to use the DataPersistence to save the result, uncomment and handle the error
+	// err := sh.DataPersistence.SaveSimulationResult(r.Context(), &result)
+	// if err != nil {
+	// 	http.Error(w, "Failed to save simulation result: "+err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(result); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		return
+	}
+}
+
+
+    middleware/
+        cors.go
+        Contents:
+package middleware // or the appropriate package name
+
+import (
+	"net/http"
+	"os"
+)
+
+// EnableCORS wraps an HTTP handler with CORS headers
+func EnableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		allowedOrigin := os.Getenv("CORS_ORIGIN")
+		// Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		// If it's a preflight OPTIONS request, send an OK response
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+
+    cmd/
+        main.go
+        Contents:
+package main
+
+import (
+	// "github.com/JoeLuker/verden2/simulation"
+	"log"
+	"net/http"
+)
+
+func main() {
+	// ctx := context.Background()
+
+	// Initialize services and middleware here if any
+
+	// Setup HTTP routes
+	// http.Handle("/api/simulate", middleware.EnableCORS(http.HandlerFunc(HandleSimulationRequest)))
+	// http.Handle("/api/simulation-result", middleware.EnableCORS(http.HandlerFunc(HandleRetrieveSimulation)))
+
+	// Start the server
+	log.Println("Simulation service starting on port 8080...")
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatal("ListenAndServe error:", err)
+	}
+}
+
+

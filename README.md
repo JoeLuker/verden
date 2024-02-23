@@ -135,4 +135,218 @@ Given the scope and complexity of the task, it's challenging to provide specific
 8. **Configuration and Secrets Management**:
    - Ensure that configuration and secrets are managed securely, possibly using environment variables or configuration management tools.
 
-Before proceeding with these changes, review your project's requirements, and determine what updates align best with your goals. If you agree with these suggestions or have specific issues you'd like to address, we can dive deeper into actionable steps for each recommendation.
+
+# Verden
+
+A large scale economic simulation
+
+## TODO
+
+# Project Overview
+
+
+    * Go
+
+    * Svelte
+    * SveltKit
+    * Docker
+
+    * MongoDB
+    * Redis
+    * GitHub
+
+
+
+    * Kubernetes
+
+    * alertmanager
+    * cassandra
+    * dgraph
+    * grafana
+    * jaeger
+    * kafka
+    * keycloak
+    * loki
+    * minio
+    * prometheus
+    * ratel
+    * redis
+    * sentry
+    * sonarqube
+    * spark
+    * unleash
+    * vault
+    * zookeeper
+    * istio
+    * argocd
+    * consul
+    * cilium
+    * kubeveious
+    * rancher
+    * helm
+    * kustomize
+    * tilt
+    * swagger
+
+
+    * Scala
+    * Python
+    * Astro
+    * Vue
+
+    * React
+    * React Native
+    * Flutter
+    * Tailwind CSS
+
+    * Next.js
+    * Nuxt.js
+
+    * OpenCL
+    * CUDA
+    * Vulkan
+
+    * CI/CD
+    * Hive
+    * Postgresql
+    * Kafka
+    * gRPC
+    * Tilt
+
+
+verden-chart/
+├── .helmignore                    # Ignore patterns for Helm packaging
+├── charts/                        # Dependencies for other Helm charts
+├── templates/                     # Kubernetes resource templates
+│   ├── _helpers.tpl               # Helper templates with common labels and definitions
+│   ├── mongodb/
+│   │   ├── deployment.yaml        # MongoDB deployment
+│   │   ├── service.yaml           # MongoDB service
+│   │   └── hpa.yaml               # Horizontal Pod Autoscaler for MongoDB
+│   ├── redis/
+│   │   ├── deployment.yaml        # Redis deployment
+│   │   ├── service.yaml           # Redis service
+│   │   └── network-policy.yaml    # Network policy for Redis
+│   ├── kafka/
+│   │   ├── deployment.yaml        # Kafka deployment
+│   │   ├── service.yaml           # Kafka service
+│   │   └── hpa.yaml               # HPA for Kafka
+│   ├── zookeeper/
+│   │   ├── statefulset.yaml       # Zookeeper StatefulSet
+│   │   ├── service.yaml           # Zookeeper service
+│   ├── cassandra/
+│   │   ├── statefulset.yaml       # Cassandra StatefulSet
+│   │   ├── service.yaml           # Cassandra service
+│   ├── prometheus/
+│   │   ├── deployment.yaml        # Prometheus deployment
+│   │   ├── service.yaml           # Prometheus service
+│   │   └── serviceaccount.yaml    # ServiceAccount for Prometheus
+│   ├── grafana/
+│   │   ├── deployment.yaml        # Grafana deployment
+│   │   ├── service.yaml           # Grafana service
+│   ├── jaeger/
+│   │   ├── deployment.yaml        # Jaeger deployment
+│   │   ├── service.yaml           # Jaeger service
+│   ├── loki/
+│   │   ├── deployment.yaml        # Loki deployment
+│   │   ├── service.yaml           # Loki service
+│   ├── alertmanager/
+│   │   ├── deployment.yaml        # Alertmanager deployment
+│   │   ├── service.yaml           # Alertmanager service
+│   ├── vault/
+│   │   ├── deployment.yaml        # Vault deployment
+│   │   ├── service.yaml           # Vault service
+│   ├── sonarqube/
+│   │   ├── deployment.yaml        # SonarQube deployment
+│   │   ├── service.yaml           # SonarQube service
+│   ├── sentry/
+│   │   ├── deployment.yaml        # Sentry deployment
+│   │   ├── service.yaml           # Sentry service
+│   ├── keycloak/
+│   │   ├── deployment.yaml        # Keycloak deployment
+│   │   ├── service.yaml           # Keycloak service
+│   │   ├── ingress.yaml           # Ingress for Keycloak
+│   ├── spark-master/
+│   │   ├── deployment.yaml        # Spark Master deployment
+│   │   ├── service.yaml           # Spark Master service
+│   ├── spark-worker/
+│   │   ├── deployment.yaml        # Spark Worker deployment
+│   │   ├── service.yaml           # Spark Worker service
+│   ├── swagger-ui/
+│   │   ├── deployment.yaml        # Swagger UI deployment
+│   │   ├── service.yaml           # Swagger UI service
+│   ├── dgraph/
+│   │   ├── zero-deployment.yaml   # Dgraph Zero deployment
+│   │   ├── zero-service.yaml      # Dgraph Zero service
+│   │   ├── alpha-deployment.yaml  # Dgraph Alpha deployment
+│   │   ├── alpha-service.yaml     # Dgraph Alpha service
+│   │   └── ratel-service.yaml     # Dgraph Ratel service
+│   ├── istio/
+│   │   ├── virtual-service.yaml   # Istio Virtual Service
+│   │   └── gateway.yaml           # Istio Gateway
+│   ├── argocd/
+│   │   ├── deployment.yaml        # ArgoCD deployment
+│   │   ├── service.yaml           # ArgoCD service
+│   ├── consul/
+│   │   ├── deployment.yaml        # Consul deployment
+│   │   ├── service.yaml           # Consul service
+│   ├── cilium/
+│   │   ├── daemonset.yaml         # Cilium DaemonSet
+│   ├── kubevious/
+│   │   ├── deployment.yaml        # Kubevious deployment
+│   │   ├── service.yaml           # Kubevious service
+│   ├── rancher/
+│   │   ├── deployment.yaml        # Rancher deployment
+│   │   ├── service.yaml           # Rancher service
+│   ├── postgresql/
+│   │   ├── deployment.yaml        # PostgreSQL deployment
+│   │   ├── service.yaml           # PostgreSQL service
+│   ├── hive/
+│   │   ├── deployment.yaml        # Hive deployment
+│   │   ├── service.yaml           # Hive service
+│   ├── unleash/
+│   │   ├── deployment.yaml        # Unleash deployment
+│   │   ├── service.yaml           # Unleash service
+│   ├── minio/
+│   │   ├── deployment.yaml        # MinIO deployment for object storage
+│   │   ├── service.yaml           # MinIO service
+│   │   └── ingress.yaml           # Ingress for MinIO (if applicable)
+│   └── ...
+├── values/
+│   ├── mongodb.yaml               # Values for MongoDB configurations
+│   ├── redis.yaml                 # Values for Redis configurations
+│   ├── kafka.yaml                 # Values for Kafka configurations
+│   ├── zookeeper.yaml             # Values for Zookeeper configurations
+│   ├── cassandra.yaml             # Values for Cassandra configurations
+│   ├── prometheus.yaml            # Values for Prometheus configurations
+│   ├── grafana.yaml               # Values for Grafana configurations
+│   ├── jaeger.yaml                # Values for Jaeger configurations
+│   ├── loki.yaml                  # Values for Loki configurations
+│   ├── alertmanager.yaml          # Values for Alertmanager configurations
+│   ├── vault.yaml                 # Values for Vault configurations
+│   ├── sonarqube.yaml             # Values for SonarQube configurations
+│   ├── sentry.yaml                # Values for Sentry configurations
+│   ├── keycloak.yaml              # Values for Keycloak configurations
+│   ├── spark.yaml                 # Values for Spark Master and Worker configurations
+│   ├── swagger-ui.yaml            # Values for Swagger UI configurations
+│   ├── dgraph.yaml                # Values for Dgraph configurations
+│   ├── istio.yaml                 # Values for Istio configurations
+│   ├── argocd.yaml                # Values for ArgoCD configurations
+│   ├── consul.yaml                # Values for Consul configurations
+│   ├── cilium.yaml                # Values for Cilium configurations
+│   ├── kubevious.yaml             # Values for Kubevious configurations
+│   ├── rancher.yaml               # Values for Rancher configurations
+│   ├── postgresql.yaml            # Values for PostgreSQL configurations
+│   ├── hive.yaml                  # Values for Hive configurations
+│   ├── unleash.yaml               # Values for Unleash configurations
+│   ├── minio.yaml                 # Values for MinIO configurations
+├── values.yaml                    # Global default values
+├── values-dev.yaml                # Development environment overrides
+├── values-staging.yaml            # Staging environment overrides
+├── values-prod.yaml               # Production environment overrides
+├── secrets/
+│   ├── dev.yaml.enc               # Development environment secrets
+│   ├── staging.yaml.enc           # Staging environment secrets
+│   └── prod.yaml.enc              # Production environment secrets
+├── Chart.yaml                     # Chart metadata
+└── README.md                      # Comprehensive documentation
